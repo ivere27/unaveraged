@@ -1,0 +1,1796 @@
+{
+  "format": "unaveraged-digit-comparison/v1",
+  "updated": "2026-10-27",
+  "status": "completed-with-numerical-differences",
+  "aggregate_only": true,
+  "runtime": {
+    "native": {
+      "package": "volvoxai",
+      "version": "0.9.0",
+      "source": "pypi",
+      "sha256": {
+        "libvolvoxai.so": "3dcd7236d71bff5236e60a3e2c8e665e95ad2ee59471641cdea37da72543695d",
+        "libsynurang_module_host.so": "a41b36a8ec25847d0dbd23dc9cd8da72d1c1245b7780277897484c35264b3cfb"
+      },
+      "wheel": "volvoxai-0.9.0-cp310-abi3-manylinux_2_28_x86_64.whl",
+      "wheel_sha256": "47b1e1a720d4938bafc152f0d87af907057afc7ae8ba9909606ead3b24a30a5d",
+      "url": "https://files.pythonhosted.org/packages/4d/c6/e398c121a68478bb32944383c04bfec10494a25bafc701a6a0fd167553fa/volvoxai-0.9.0-cp310-abi3-manylinux_2_28_x86_64.whl"
+    },
+    "wasm": {
+      "package": "volvoxai-lite",
+      "version": "0.9.0",
+      "source": "published-npm",
+      "sha256": {
+        "volvoxai.lite.min.js": "b228f0014189e85f8ec4070ad98ea64eae3c0e9905101ddfe55d4aa3632f5ac2",
+        "volvoxai.lite.wasm": "b4b290aa55feb16c2f45a2158438dc342b6a8e42ce5abc9c3648d4b56b3c50f1"
+      },
+      "tarball_sha256": "4571e36a5be180341ac3d7a1739826c8c35514572a66ab9eaee442f52d574de0",
+      "integrity": "sha512-zxQNkaYB69mZ6KvMA5iKmBD+6UgF6pzX21qIzoZ7zCyxsKqRVe/GiYs6gj+pO+v1zgQ27hHxsps4VHMLxyLB4g==",
+      "url": "https://registry.npmjs.org/volvoxai-lite/-/volvoxai-lite-0.9.0.tgz"
+    }
+  },
+  "environment": {
+    "python": "3.10.12",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "cpu": "AMD Ryzen 5 5600U with Radeon Graphics"
+  },
+  "environment_scope": "Full 2000-record accuracy passes only. Primary timing hosts are recorded separately in latency_environment.",
+  "latency_environment": {
+    "native": {
+      "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "logical_cpus": 4,
+      "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+      "python": "3.10.12",
+      "numpy": "2.2.6",
+      "host_observations": [
+        {
+          "phase": "before",
+          "timestamp": "2026-10-27T06:02:06.596454+00:00",
+          "loadavg": [
+            0.1982421875,
+            0.09814453125,
+            0.03369140625
+          ]
+        },
+        {
+          "phase": "after",
+          "timestamp": "2026-10-27T06:02:27.853666+00:00",
+          "loadavg": [
+            0.4267578125,
+            0.15771484375,
+            0.05517578125
+          ]
+        }
+      ]
+    },
+    "chrome": {
+      "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+      "logical_cpus": 4,
+      "platform": "Linux 6.8.0-138-generic x64",
+      "node": "v24.19.0",
+      "host_observations": [
+        {
+          "phase": "before",
+          "timestamp": "2026-10-27T06:02:53.106Z",
+          "loadavg": [
+            0.28,
+            0.14,
+            0.05
+          ]
+        },
+        {
+          "phase": "after",
+          "timestamp": "2026-10-27T06:04:07.170Z",
+          "loadavg": [
+            0.8,
+            0.34,
+            0.13
+          ]
+        }
+      ],
+      "browser": "Chrome/150.0.7871.24"
+    }
+  },
+  "corpus": {
+    "samples": 2000,
+    "unique_images": 1986,
+    "unique_preprocessed_inputs": 1986,
+    "split": "heldout",
+    "ordered_inputs_sha256": "dce597055e74f005fd124e9591ecf46186abc49490565838e1f09afa5b70ae46",
+    "ordered_labels_sha256": "999c883854e1aed5fe4debcd13098fe6e3f279ab7af5693fb25380c42cda1afb",
+    "ordered_image_files_sha256": "02f7895f0c97e0b9965b773c7e4dd6abb46aa735e408da2d73a23d28197363f3",
+    "ordered_annotation_files_sha256": "cb98cfdb275c0a4c9a82372c8178bd191d989a46efce5e520886d8e1d72cb66a",
+    "annotation_caveat": "Provided labels are not a fully audited human-gold dataset. Corpus has prior development/evaluation use; no new independent qualification claim.",
+    "question_answers_consistent_with_numeric_records": 2000,
+    "prior_evaluation_use": true,
+    "independent": false,
+    "training_performed": false,
+    "w8a8_cached_calibration_overlap": 0
+  },
+  "protocol": {
+    "accuracy": {
+      "native": {
+        "backend": "cpu",
+        "cpu_threads": 1,
+        "batch_size": 1,
+        "warmups": 4,
+        "warmup_input": "First ordered heldout input",
+        "samples_per_model": 2000,
+        "repeats_per_input": 1,
+        "order": "Sequential models in fixture order; all ordered heldout inputs once per model",
+        "timer_includes": [
+          "InferenceSession.run, input/output transport and owned output arrays"
+        ],
+        "timer_excludes": [
+          "input file read",
+          "preprocessing",
+          "hashing",
+          "scoring",
+          "loading/compilation",
+          "warmups",
+          "browser/UI"
+        ],
+        "p95_method": "Linear interpolation over 2000 warm execution samples",
+        "host_idle_claimed": false
+      },
+      "chrome": {
+        "backend": "wasm",
+        "cpu_threads": 1,
+        "batch_size": 1,
+        "warmups": 4,
+        "execution_context": "Chrome dedicated module worker",
+        "latency_scope": "One warm execution per heldout input, after cold execution and four (or requested) warmups on input zero; no batching",
+        "timer_includes": [
+          "Execute dispatch, input/output transport and copied inline slot logits"
+        ],
+        "timer_excludes": [
+          "pixel loading",
+          "image preprocessing",
+          "model load/compile/context",
+          "request construction",
+          "numeric accuracy/parity scoring and hashing",
+          "checkpoint writes",
+          "UI and extension queue"
+        ],
+        "host_idle_claimed": false,
+        "browser": "Chrome/150.0.7871.24",
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.0005
+        },
+        "samples_per_model": 2000,
+        "repeats_per_input": 1,
+        "order": "The same ordered heldout inputs once, sequentially within each model. The first ten models use one sequential driver; the final three model processes start concurrently while model ten completes.",
+        "execution_schedule": {
+          "initial_serial_models": 10,
+          "parallel_final_models": [
+            "conv3-linear3-qat",
+            "conv8-linear2-importance",
+            "conv8-linear2-head-qat"
+          ],
+          "overlap": "The final three model processes start while model ten completes. Each model processes the identical 2000 ordered inputs sequentially.",
+          "handoff": "The initial non-resume driver ends when mkdir encounters the existing model-eleven directory; this guard occurs before modifying that directory. Individual model reports are the completion authority.",
+          "latency_scope": "Local full-accuracy pass timings are auxiliary and include concurrent host load. Primary comparison uses separate serialized native and Chrome interleaved runs on the i3-1115G4 host."
+        }
+      }
+    },
+    "latency": {
+      "native": {
+        "cycles": 15,
+        "warmups_per_input": 4,
+        "initial_reference_executions_per_input": 1,
+        "input_count": 3,
+        "samples_per_model": 45,
+        "batch_size": 1,
+        "cpu_threads": 1,
+        "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+        "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+        "host_idle_claimed": false,
+        "timer_includes": [
+          "InferenceSession.run, input/output transport and owned output arrays"
+        ],
+        "timer_excludes": [
+          "input reads",
+          "hashing",
+          "preprocessing",
+          "loading/compilation",
+          "warmups",
+          "numerical validation"
+        ],
+        "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+        "source_input_indices": [
+          0,
+          999,
+          1999
+        ],
+        "input_sha256": [
+          "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+          "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+          "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+        ],
+        "status": "passed",
+        "tolerance": {
+          "rtol": 0.0005,
+          "atol": 0.001
+        }
+      },
+      "chrome": {
+        "cycles": 15,
+        "warmups_per_input": 4,
+        "initial_reference_executions_per_input": 1,
+        "input_count": 3,
+        "samples_per_model": 45,
+        "batch_size": 1,
+        "cpu_threads": 1,
+        "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+        "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+        "host_idle_claimed": false,
+        "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+        "source_input_indices": [
+          0,
+          999,
+          1999
+        ],
+        "input_sha256": [
+          "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+          "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+          "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+        ],
+        "status": "passed",
+        "tolerance": {
+          "rtol": 0.0005,
+          "atol": 0.001
+        },
+        "browser": "Chrome/150.0.7871.24",
+        "execution_context": "Chrome dedicated module worker",
+        "timer_includes": [
+          "execute dispatch, input/output transport and copied inline output"
+        ],
+        "timer_excludes": [
+          "preprocessing",
+          "model verification",
+          "load",
+          "compile",
+          "context creation",
+          "numerical validation",
+          "UI",
+          "extension queue"
+        ]
+      }
+    },
+    "comparison_scope": "Primary native and Chrome model latency uses the same host, three heldout inputs, 15 cycles and alternating model order. Full 2000-input accuracy-pass latency from the separate accuracy host is retained separately and includes concurrent final-model evaluation; no cross-host speedup is inferred."
+  },
+  "models": [
+    {
+      "id": "f32",
+      "method": "FP32 reference",
+      "conv_weight_bits": 32,
+      "linear_weight_bits": 32,
+      "activation_policy": "FP32",
+      "packed_arithmetic": "f32",
+      "graph_weight_bytes": 9949321,
+      "selected": false,
+      "sha256": {
+        "graph.json": "09268ab13dba6b615a04e9891b186497ea09acbe89a4f263aed3ebcd85231071",
+        "model.safetensors": "1aebb58a94fe40abfb8ecde5ff2128254438e1c987b4ac7b60a3522cf6ed1b27"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1938,
+          "phone_correct": 1988,
+          "street_correct": 1950,
+          "answer_correct": 1975,
+          "samples": 2000,
+          "record_percent": 96.9,
+          "answer_percent": 98.75
+        },
+        "chrome": {
+          "record_correct": 1938,
+          "phone_correct": 1988,
+          "street_correct": 1950,
+          "answer_correct": 1975,
+          "samples": 2000,
+          "record_percent": 96.9,
+          "answer_percent": 98.75
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 33.794236,
+          "mean_ms": 33.84408542222222,
+          "p95_ms": 34.1868754
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 166.09999990463257,
+          "mean_ms": 166.44444443384808,
+          "p95_ms": 168.86000003814698
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 8.404254913330078e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 35.71454,
+          "mean_ms": 36.1624875085,
+          "p95_ms": 39.0297658
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 178.5,
+          "mean_ms": 179.95185000020265,
+          "p95_ms": 190.79999995529653
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 0,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 5.173683166503906e-05
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "passed"
+      }
+    },
+    {
+      "id": "w8a8",
+      "method": "PTQ; Conv RTN/W8, Linear FP32",
+      "conv_weight_bits": 8,
+      "linear_weight_bits": 32,
+      "activation_policy": "Static INT8 convolution activations; FP32 dense",
+      "packed_arithmetic": "f32",
+      "graph_weight_bytes": 4132316,
+      "selected": false,
+      "sha256": {
+        "graph.json": "8e89b05bae252847ba66e4a654f3b0bec4f25f0c5d444e86dedefa752e026c2a",
+        "model.safetensors": "4e3f0fc5777d536312573f885ece77865574aba751f82a574b14c14c50218b7b"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1936,
+          "phone_correct": 1986,
+          "street_correct": 1950,
+          "answer_correct": 1976,
+          "samples": 2000,
+          "record_percent": 96.8,
+          "answer_percent": 98.8
+        },
+        "chrome": {
+          "record_correct": 1936,
+          "phone_correct": 1986,
+          "street_correct": 1950,
+          "answer_correct": 1976,
+          "samples": 2000,
+          "record_percent": 96.8,
+          "answer_percent": 98.8
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 21.849448,
+          "mean_ms": 21.832480333333333,
+          "p95_ms": 22.0759288
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 80.80000019073486,
+          "mean_ms": 81.25333338843451,
+          "p95_ms": 82.78000020980835
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 3.814697265625e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 29.893561,
+          "mean_ms": 29.9197572695,
+          "p95_ms": 31.2325407
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 90.30000001192093,
+          "mean_ms": 96.87899999994039,
+          "p95_ms": 132.10499996840954
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 11,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.041626691818237305
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv8-linear4",
+      "method": "PTQ; Conv rtn, Linear mse-clip",
+      "conv_weight_bits": 8,
+      "linear_weight_bits": 4,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 2797157,
+      "selected": false,
+      "sha256": {
+        "graph.json": "3e3ff8f065101cf2071b4090ff556cdfe87b5dc611516c438c3ff2ae4c25bf2f",
+        "model.safetensors": "ff8ad0ef853d4ead2dedc12c20d5fdb69421379aded8c09dd4b8c6914a6f58cd"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1935,
+          "phone_correct": 1985,
+          "street_correct": 1950,
+          "answer_correct": 1976,
+          "samples": 2000,
+          "record_percent": 96.75,
+          "answer_percent": 98.8
+        },
+        "chrome": {
+          "record_correct": 1935,
+          "phone_correct": 1985,
+          "street_correct": 1950,
+          "answer_correct": 1976,
+          "samples": 2000,
+          "record_percent": 96.75,
+          "answer_percent": 98.8
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 22.449057,
+          "mean_ms": 22.457270977777778,
+          "p95_ms": 22.615242799999997
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 80.59999990463257,
+          "mean_ms": 80.76888888676962,
+          "p95_ms": 82.60000038146973
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 5.7220458984375e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 30.0571,
+          "mean_ms": 30.0536747745,
+          "p95_ms": 31.27923545
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 94.30000001192093,
+          "mean_ms": 140.38244999966025,
+          "p95_ms": 349.6100000232458
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 106,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.09979104995727539
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear4",
+      "method": "PTQ; Conv mse-clip, Linear mse-clip",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 4,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1825097,
+      "selected": false,
+      "sha256": {
+        "graph.json": "968dbaeecff599d9a2b4c77cd28ef9f4f23a02b98cfbd33b253dc0fb8974abab",
+        "model.safetensors": "eeba91def9302efbdb18cb76b6dd631d3cb8d215050c40a33e2ce2487f716053"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1921,
+          "phone_correct": 1976,
+          "street_correct": 1942,
+          "answer_correct": 1969,
+          "samples": 2000,
+          "record_percent": 96.05,
+          "answer_percent": 98.45
+        },
+        "chrome": {
+          "record_correct": 1921,
+          "phone_correct": 1976,
+          "street_correct": 1942,
+          "answer_correct": 1969,
+          "samples": 2000,
+          "record_percent": 96.05,
+          "answer_percent": 98.45
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 27.098141,
+          "mean_ms": 27.091269644444445,
+          "p95_ms": 27.323189
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.69999980926514,
+          "mean_ms": 89.34222219255236,
+          "p95_ms": 90.65999984741211
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 5.7220458984375e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 31.593784499999998,
+          "mean_ms": 31.6361477585,
+          "p95_ms": 32.93253165
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 110.80000001192093,
+          "mean_ms": 116.13919999989868,
+          "p95_ms": 153.6050000220537
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 92,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.09874081611633301
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear3",
+      "method": "PTQ; Conv importance, Linear importance",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 3,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1775585,
+      "selected": false,
+      "sha256": {
+        "graph.json": "8d9d1b7e3e3a9dff10ce011f40f02c6cbe8dfe66064fd344eae569bf2bdf5a5d",
+        "model.safetensors": "539b821e87cdc4b1b9e811e9d6f0191c7f13fc85e7f98e6adae9fc3ef90b4167"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1917,
+          "phone_correct": 1976,
+          "street_correct": 1940,
+          "answer_correct": 1967,
+          "samples": 2000,
+          "record_percent": 95.85,
+          "answer_percent": 98.35
+        },
+        "chrome": {
+          "record_correct": 1917,
+          "phone_correct": 1976,
+          "street_correct": 1940,
+          "answer_correct": 1967,
+          "samples": 2000,
+          "record_percent": 95.85,
+          "answer_percent": 98.35
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 26.842503,
+          "mean_ms": 26.873333777777777,
+          "p95_ms": 27.1481338
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.90000009536743,
+          "mean_ms": 89.23555552164713,
+          "p95_ms": 91.43999996185302
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 5.7220458984375e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 31.8018725,
+          "mean_ms": 31.7575264995,
+          "p95_ms": 32.8470302
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 85.90000003576279,
+          "mean_ms": 90.99275000083446,
+          "p95_ms": 129.51500000059605
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 111,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.052677154541015625
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear2",
+      "method": "CUDA joint weight QAT; MSE final PTQ",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 2,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1726081,
+      "selected": true,
+      "sha256": {
+        "graph.json": "2ebaf4611059b396a7fddc3ddea4c8be5dc0993a6065ef65de593e7896ce1d24",
+        "model.safetensors": "b435d2959b2e792dbb97dc812efa08fd1e3e9d3de6fad0d169992c5b7c8c03ab"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1913,
+          "phone_correct": 1972,
+          "street_correct": 1931,
+          "answer_correct": 1968,
+          "samples": 2000,
+          "record_percent": 95.65,
+          "answer_percent": 98.4
+        },
+        "chrome": {
+          "record_correct": 1913,
+          "phone_correct": 1972,
+          "street_correct": 1931,
+          "answer_correct": 1968,
+          "samples": 2000,
+          "record_percent": 95.65,
+          "answer_percent": 98.4
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 27.103447,
+          "mean_ms": 27.1741368,
+          "p95_ms": 27.4313216
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.2000002861023,
+          "mean_ms": 88.49777782228259,
+          "p95_ms": 90.68000020980834
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 6.67572021484375e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 31.814622,
+          "mean_ms": 32.0615433005,
+          "p95_ms": 34.2952161
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 86.89999997615814,
+          "mean_ms": 87.55085000094772,
+          "p95_ms": 94.30000001192093
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 118,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.13301706314086914
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear3-mse-ptq",
+      "method": "Matched MSE PTQ",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 3,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1775585,
+      "selected": false,
+      "sha256": {
+        "graph.json": "8d9d1b7e3e3a9dff10ce011f40f02c6cbe8dfe66064fd344eae569bf2bdf5a5d",
+        "model.safetensors": "36b40042c9afde01f3861e85f13062204d898138100c45ad02e96c61552cab6c"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1915,
+          "phone_correct": 1971,
+          "street_correct": 1940,
+          "answer_correct": 1971,
+          "samples": 2000,
+          "record_percent": 95.75,
+          "answer_percent": 98.55
+        },
+        "chrome": {
+          "record_correct": 1915,
+          "phone_correct": 1971,
+          "street_correct": 1940,
+          "answer_correct": 1971,
+          "samples": 2000,
+          "record_percent": 95.75,
+          "answer_percent": 98.55
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 27.383582,
+          "mean_ms": 27.431049422222223,
+          "p95_ms": 27.750996400000002
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.5,
+          "mean_ms": 88.85111111534967,
+          "p95_ms": 90.76000013351441
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 3.814697265625e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 31.939163,
+          "mean_ms": 32.372860599,
+          "p95_ms": 34.34018115
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 87.69999998807907,
+          "mean_ms": 101.34214999994636,
+          "p95_ms": 193.20499998629091
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 109,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.06479412317276001
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear3-qat",
+      "method": "CUDA joint weight QAT; MSE final PTQ",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 3,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1775585,
+      "selected": false,
+      "sha256": {
+        "graph.json": "8d9d1b7e3e3a9dff10ce011f40f02c6cbe8dfe66064fd344eae569bf2bdf5a5d",
+        "model.safetensors": "d48f98744c2cf8ccdc593b9e9a60396a318df06be2375afd89a757a2fefbd298"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1912,
+          "phone_correct": 1975,
+          "street_correct": 1934,
+          "answer_correct": 1969,
+          "samples": 2000,
+          "record_percent": 95.6,
+          "answer_percent": 98.45
+        },
+        "chrome": {
+          "record_correct": 1912,
+          "phone_correct": 1975,
+          "street_correct": 1934,
+          "answer_correct": 1969,
+          "samples": 2000,
+          "record_percent": 95.6,
+          "answer_percent": 98.45
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 26.946984,
+          "mean_ms": 26.919088755555556,
+          "p95_ms": 27.113082000000002
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.5,
+          "mean_ms": 88.75333333545261,
+          "p95_ms": 90.4
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 4.76837158203125e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 32.423728499999996,
+          "mean_ms": 32.7336825675,
+          "p95_ms": 35.111643449999995
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 85.69999998807907,
+          "mean_ms": 87.29809999999404,
+          "p95_ms": 97.80000001192093
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 100,
+        "byte_mismatches": 1999,
+        "maximum_absolute_logit_difference": 0.09962606430053711
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv4-linear2-mse-ptq",
+      "method": "Matched MSE PTQ",
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 2,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1726081,
+      "selected": false,
+      "sha256": {
+        "graph.json": "2ebaf4611059b396a7fddc3ddea4c8be5dc0993a6065ef65de593e7896ce1d24",
+        "model.safetensors": "c34959216505f71bbe1075b1d5b7569ef4328644078895a7af3e46a7f7253833"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 240,
+          "phone_correct": 245,
+          "street_correct": 1918,
+          "answer_correct": 1839,
+          "samples": 2000,
+          "record_percent": 12.0,
+          "answer_percent": 91.95
+        },
+        "chrome": {
+          "record_correct": 240,
+          "phone_correct": 245,
+          "street_correct": 1918,
+          "answer_correct": 1839,
+          "samples": 2000,
+          "record_percent": 12.0,
+          "answer_percent": 91.95
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 27.01341,
+          "mean_ms": 27.020476,
+          "p95_ms": 27.298352
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 88.89999961853027,
+          "mean_ms": 89.115555551317,
+          "p95_ms": 90.68000020980836
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 4.76837158203125e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 32.0246895,
+          "mean_ms": 31.9966032575,
+          "p95_ms": 33.39063075
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 92.90000003576279,
+          "mean_ms": 104.27749999967217,
+          "p95_ms": 169.80499995350837
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 102,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.13189125061035156
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv3-linear3-mse-ptq",
+      "method": "Matched MSE PTQ",
+      "conv_weight_bits": 3,
+      "linear_weight_bits": 3,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1532481,
+      "selected": false,
+      "sha256": {
+        "graph.json": "a2e0bf707a40cbd122e474c9c51d4ac7f16d2773f847f133a4554d5f3572b9f0",
+        "model.safetensors": "72c981b795bfc1b19f7889a51400f076b250b21954ed58d784a59c58f94dc33b"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1853,
+          "phone_correct": 1951,
+          "street_correct": 1898,
+          "answer_correct": 1945,
+          "samples": 2000,
+          "record_percent": 92.65,
+          "answer_percent": 97.25
+        },
+        "chrome": {
+          "record_correct": 1853,
+          "phone_correct": 1951,
+          "street_correct": 1898,
+          "answer_correct": 1945,
+          "samples": 2000,
+          "record_percent": 92.65,
+          "answer_percent": 97.25
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 30.411326,
+          "mean_ms": 30.43707168888889,
+          "p95_ms": 30.713666
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 91.80000019073486,
+          "mean_ms": 92.13111115561591,
+          "p95_ms": 93.67999982833862
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 5.7220458984375e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 34.8694155,
+          "mean_ms": 35.2294597565,
+          "p95_ms": 37.6207571
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 108.0,
+          "mean_ms": 137.81954999986291,
+          "p95_ms": 262.8300000101328
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 107,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.13852667808532715
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv3-linear3-qat",
+      "method": "CUDA joint weight QAT; MSE final PTQ",
+      "conv_weight_bits": 3,
+      "linear_weight_bits": 3,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 1532481,
+      "selected": false,
+      "sha256": {
+        "graph.json": "a2e0bf707a40cbd122e474c9c51d4ac7f16d2773f847f133a4554d5f3572b9f0",
+        "model.safetensors": "e9d71e33638bd14b342f73b60c171d42e1964ea3408fbd3ce4cfd15e7a67a8b1"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1870,
+          "phone_correct": 1963,
+          "street_correct": 1903,
+          "answer_correct": 1946,
+          "samples": 2000,
+          "record_percent": 93.5,
+          "answer_percent": 97.3
+        },
+        "chrome": {
+          "record_correct": 1870,
+          "phone_correct": 1963,
+          "street_correct": 1903,
+          "answer_correct": 1946,
+          "samples": 2000,
+          "record_percent": 93.5,
+          "answer_percent": 97.3
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 30.031399,
+          "mean_ms": 30.005897822222224,
+          "p95_ms": 30.1559654
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 91.90000009536743,
+          "mean_ms": 92.16222224765353,
+          "p95_ms": 94.20000019073487
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 4.76837158203125e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 34.8649765,
+          "mean_ms": 35.1007262135,
+          "p95_ms": 37.1985716
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 134.89999997615814,
+          "mean_ms": 155.87005000057817,
+          "p95_ms": 270.33500001132484
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 112,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.0957956314086914
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv8-linear2-importance",
+      "method": "PTQ; Conv8 unchanged, Linear2 input-importance",
+      "conv_weight_bits": 8,
+      "linear_weight_bits": 2,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 2698149,
+      "selected": false,
+      "sha256": {
+        "graph.json": "eb930ac3903342b5075d2c33392e2a617a21d8b7cf1d7f514764ff883558bb40",
+        "model.safetensors": "6de14987829b21f287aacf8d6f235194c136f0d916ee8fcae5de9a3003b0528f"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1890,
+          "phone_correct": 1958,
+          "street_correct": 1927,
+          "answer_correct": 1964,
+          "samples": 2000,
+          "record_percent": 94.5,
+          "answer_percent": 98.2
+        },
+        "chrome": {
+          "record_correct": 1890,
+          "phone_correct": 1958,
+          "street_correct": 1927,
+          "answer_correct": 1964,
+          "samples": 2000,
+          "record_percent": 94.5,
+          "answer_percent": 98.2
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 22.015515,
+          "mean_ms": 22.06242048888889,
+          "p95_ms": 22.463154
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 80.09999990463257,
+          "mean_ms": 80.47555553648206,
+          "p95_ms": 82.30000019073486
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 3.814697265625e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 31.018197999999998,
+          "mean_ms": 31.8634068535,
+          "p95_ms": 36.9511087
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 121.4500000178814,
+          "mean_ms": 142.1991499992609,
+          "p95_ms": 247.60000002384186
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 138,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.08841753005981445
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    },
+    {
+      "id": "conv8-linear2-head-qat",
+      "method": "CPU head-only weight QAT; Conv8 frozen",
+      "conv_weight_bits": 8,
+      "linear_weight_bits": 2,
+      "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations",
+      "packed_arithmetic": "dynamic-i8",
+      "graph_weight_bytes": 2698149,
+      "selected": false,
+      "sha256": {
+        "graph.json": "eb930ac3903342b5075d2c33392e2a617a21d8b7cf1d7f514764ff883558bb40",
+        "model.safetensors": "659305baa9ff70229531b799e0aa82f5c8b4ee9c83b64d81e96c2c296f8bf03e"
+      },
+      "source_exporter_version": "0.8.0",
+      "retrained_for_target_runtime": false,
+      "accuracy": {
+        "native": {
+          "record_correct": 1920,
+          "phone_correct": 1976,
+          "street_correct": 1942,
+          "answer_correct": 1973,
+          "samples": 2000,
+          "record_percent": 96.0,
+          "answer_percent": 98.65
+        },
+        "chrome": {
+          "record_correct": 1920,
+          "phone_correct": 1976,
+          "street_correct": 1942,
+          "answer_correct": 1973,
+          "samples": 2000,
+          "record_percent": 96.0,
+          "answer_percent": 98.65
+        }
+      },
+      "latency": {
+        "native": {
+          "samples": 45,
+          "median_ms": 22.74581,
+          "mean_ms": 22.747698977777777,
+          "p95_ms": 23.025193
+        },
+        "chrome": {
+          "samples": 45,
+          "median_ms": 80.39999961853027,
+          "mean_ms": 80.83999999364217,
+          "p95_ms": 82.80000009536744
+        }
+      },
+      "latency_validation": {
+        "native": {
+          "native_reference_bytes_equal": true,
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 0.0
+        },
+        "chrome": {
+          "native_reference_slots_equal": true,
+          "native_reference_logits_within_tolerance": true,
+          "maximum_absolute_logit_difference": 3.814697265625e-06
+        }
+      },
+      "evaluation_pass_latency": {
+        "native": {
+          "samples": 2000,
+          "median_ms": 30.496497,
+          "mean_ms": 30.701790808,
+          "p95_ms": 33.18939725
+        },
+        "chrome": {
+          "samples": 2000,
+          "median_ms": 121.25000002980232,
+          "mean_ms": 141.82370000040532,
+          "p95_ms": 234.63500002324577
+        }
+      },
+      "native_parity": {
+        "slot_mismatches": 0,
+        "numerical_mismatches": 123,
+        "byte_mismatches": 2000,
+        "maximum_absolute_logit_difference": 0.08314311504364014
+      },
+      "status": {
+        "native": "passed",
+        "chrome": "completed-with-numerical-differences"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "model": "w8a8",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 11,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.041626691818237305
+    },
+    {
+      "model": "conv8-linear4",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 106,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.09979104995727539
+    },
+    {
+      "model": "conv4-linear4",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 92,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.09874081611633301
+    },
+    {
+      "model": "conv4-linear3",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 111,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.052677154541015625
+    },
+    {
+      "model": "conv4-linear2",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 118,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.13301706314086914
+    },
+    {
+      "model": "conv4-linear3-mse-ptq",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 109,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.06479412317276001
+    },
+    {
+      "model": "conv4-linear3-qat",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 100,
+      "byte_mismatches": 1999,
+      "maximum_absolute_logit_difference": 0.09962606430053711
+    },
+    {
+      "model": "conv4-linear2-mse-ptq",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 102,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.13189125061035156
+    },
+    {
+      "model": "conv3-linear3-mse-ptq",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 107,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.13852667808532715
+    },
+    {
+      "model": "conv3-linear3-qat",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 112,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.0957956314086914
+    },
+    {
+      "model": "conv8-linear2-importance",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 138,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.08841753005981445
+    },
+    {
+      "model": "conv8-linear2-head-qat",
+      "status": "completed-with-numerical-differences",
+      "slot_mismatches": 0,
+      "numerical_mismatches": 123,
+      "byte_mismatches": 2000,
+      "maximum_absolute_logit_difference": 0.08314311504364014
+    }
+  ],
+  "split_audit": {
+    "status": "passed-with-partial-coverage",
+    "scope": "Stored historical file/pixel hash manifests compared with the current heldout; source image bytes were not reread.",
+    "new_training_performed": false,
+    "base_fp32_pretraining": "unknown",
+    "audited_zero_overlap_stages": {
+      "published_w8_calibration": {
+        "samples": 256,
+        "manifest_sha256": "88d5bdc4755329ba62ebf92d326f09c04e46e231e11196713f24eacf8fab202a",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "joint_qat_train": {
+        "samples": 4817,
+        "manifest_sha256": "b8515467be3f675829b011419553040fdebe62217c74c5dc27c3b2d29d7657c1",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "joint_qat_validation": {
+        "samples": 512,
+        "manifest_sha256": "f010e5a49c572c05925a0147e42b43c9b7fc33c6edb3e6a6ce63a08f96eaf103",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "joint_qat_calibration": {
+        "samples": 256,
+        "manifest_sha256": "58aac5aafd64e155f42a2cef163ea2c9f5f2b272eb2eb862bb68d3392aa1b1e1",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "original_packed_ptq_calibration": {
+        "samples": 256,
+        "manifest_sha256": "ff3a4ca6cbe260937e060b8b4ca450c999da5643c29df1948a5970e4feaacfd4",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "head_qat_train": {
+        "samples": 4817,
+        "manifest_sha256": "725a211809f8214695801f748e36c29f9eea87416c5e26875d94bf82bbb757d2",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "head_qat_validation": {
+        "samples": 512,
+        "manifest_sha256": "4ddfffe27f0b823723b005a38de91ce07955deb076b15beb35ec53e299a45475",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      },
+      "head_qat_calibration": {
+        "samples": 256,
+        "manifest_sha256": "ff3a4ca6cbe260937e060b8b4ca450c999da5643c29df1948a5970e4feaacfd4",
+        "overlap_unique_file_hashes": 0,
+        "overlap_unique_input_hashes": 0
+      }
+    },
+    "model_coverage": {
+      "f32": {
+        "stages": {
+          "ptq_calibration": {
+            "status": "not-applicable"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "w8a8": {
+        "stages": {
+          "calibration": {
+            "status": "audited-zero-overlap",
+            "audit": "published_w8_calibration"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv8-linear4": {
+        "stages": {
+          "calibration_and_importance_inputs": {
+            "status": "audited-zero-overlap",
+            "audit": "original_packed_ptq_calibration"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv4-linear4": {
+        "stages": {
+          "calibration": {
+            "status": "historical-aggregate-only"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv4-linear3": {
+        "stages": {
+          "calibration": {
+            "status": "historical-aggregate-only"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv4-linear2": {
+        "stages": {
+          "train": {
+            "status": "audited-zero-overlap",
+            "audit": "joint_qat_train"
+          },
+          "validation": {
+            "status": "audited-zero-overlap",
+            "audit": "joint_qat_validation"
+          },
+          "calibration": {
+            "status": "audited-zero-overlap",
+            "audit": "joint_qat_calibration"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv4-linear3-mse-ptq": {
+        "stages": {},
+        "coverage": "not-linked-in-this-audit"
+      },
+      "conv4-linear3-qat": {
+        "stages": {},
+        "coverage": "not-linked-in-this-audit"
+      },
+      "conv4-linear2-mse-ptq": {
+        "stages": {},
+        "coverage": "not-linked-in-this-audit"
+      },
+      "conv3-linear3-mse-ptq": {
+        "stages": {},
+        "coverage": "not-linked-in-this-audit"
+      },
+      "conv3-linear3-qat": {
+        "stages": {},
+        "coverage": "not-linked-in-this-audit"
+      },
+      "conv8-linear2-importance": {
+        "stages": {
+          "calibration_and_importance_inputs": {
+            "status": "audited-zero-overlap",
+            "audit": "original_packed_ptq_calibration"
+          }
+        },
+        "coverage": "listed-stages-only"
+      },
+      "conv8-linear2-head-qat": {
+        "stages": {
+          "train": {
+            "status": "audited-zero-overlap",
+            "audit": "head_qat_train"
+          },
+          "validation": {
+            "status": "audited-zero-overlap",
+            "audit": "head_qat_validation"
+          },
+          "calibration": {
+            "status": "audited-zero-overlap",
+            "audit": "head_qat_calibration"
+          }
+        },
+        "coverage": "listed-stages-only"
+      }
+    },
+    "limitations": [
+      "Audit coverage is partial. Empty model stage lists and historical-aggregate-only entries are not newly verified zero overlap.",
+      "Original FP32 pretraining is unaudited; no complete training-lifecycle leakage guarantee is claimed.",
+      "These frozen models were previously examined on the same corpus, so this is not an independent blind evaluation.",
+      "Historical QAT used real and synthetic data. No new training or calibration used the currently supplied training path.",
+      "Zero exact-file/pixel hash overlap does not establish semantic-scene or near-duplicate independence."
+    ]
+  },
+  "selection_scope": "Existing compact default is marked; this evaluation does not retrain models or select a new checkpoint.",
+  "scoring": "Record accuracy requires exact complete phone and street digits. Question accuracy counts each supplied question separately.",
+  "evidence": {
+    "fixture_sha256": "1a1776d22d7656e3b3e23dc5d5e532f93eb5c01036d358f65392e979c0d458b6",
+    "model_inventory_sha256": "f179517df3d55ef47fb4a77cd47e3dd41af074d099f092c20275c114693022e1",
+    "corpus_audit_sha256": "d8ba89760787c4ede82483a83ac7784b580d0238a4e98f7564ab73c5274de96b",
+    "upstream_manifest_sha256": "1a993db8f2b1de53030ef6660c766f6512b3e1db9b423bf241f44be40e85adfa",
+    "split_audit_sha256": "d0faf855d79b41f48e5b648babe1aea46c15a23f7ba6df707f6fca59237c9c3f",
+    "accuracy_schedule_sha256": "facc3b7821b01c2e3d7346a4b3e796e59a92f8d27a781a9736c2ccb0f72250d0",
+    "native_evaluator_sha256": "97288454f9fdb2d3c603abdcf9ed5c87f9b96e3ac5d10c625f3fd35772207fee",
+    "chrome_sources_sha256": {
+      "benchmarks/digit_wasm_eval.mjs": "6e18f1fd244e5c949ef8965c71f989e3fd9ccc8729cf420fc92fbad8a6493c20",
+      "benchmarks/digit-evaluation-worker.js": "53ed54578127edd83a6611d40297e0645643d6c3219e5fbbfc42e69c6cc480ab",
+      "benchmarks/digit-evaluation.js": "bff940e90efa452b3085bb447eed93180febec907b0d09c3fd68a9c772f45817",
+      "digit/adapter.js": "4a9af7c72fa77e17c5c1bfb133d49ea3443bdb8ae6de1baf7d5c3934c2278dab",
+      "shared/extension/preprocess.js": "f4c68481381e8060bd2e95dc94485db527450fdf2f4ce47799a6be095066b28e"
+    },
+    "interleaved_latency": {
+      "fixture_sha256": "bc05cad3dae050b68d7c6d9307ff9c38ba9ccaeade42cd62dfdb2495a5c0d76e",
+      "reports": {
+        "native": {
+          "report_sha256": "07bd803158899abf4fb3285617c2f7092b2ea68f094c9a5c3f803a1fab714666",
+          "sources_sha256": {
+            "benchmarks/digit_latency.py": "586e2216ef5f6e5c0f641a212e745e3498931ad3b405b634c8fd078ce941013f",
+            "benchmarks/digit_native_eval.py": "97288454f9fdb2d3c603abdcf9ed5c87f9b96e3ac5d10c625f3fd35772207fee"
+          }
+        },
+        "chrome": {
+          "report_sha256": "749db749ccd44a79d3d4a52b5a2307371fae70d6a79cfbd361ea286a673207e6",
+          "sources_sha256": {
+            "benchmarks/runtime-benchmark.js": "e004fb860fabd20630c2381085e318aa8e9aa845d7fee90d1c6c8cacadded61e",
+            "benchmarks/worker.js": "6624e1bf061bb22ef12d524e6e22e4e1f293ee05849254526595a8fe59754270",
+            "benchmarks/digit_latency.mjs": "b4ff9654e7f8e4f5ae202ec133b2a1f524f63861dc173f47534055710d9f36e7"
+          }
+        }
+      }
+    },
+    "aggregator_sha256": "e1c6bdedc8f9de7a2b3133fb2778b48381c1629e540925c204b93fcf833a7648",
+    "reports": {
+      "f32": {
+        "native_report_sha256": "e033ab63690c9c2db3924cda6f32f077ddab1e6bde07757b22a97e64ace249d0",
+        "chrome_report_sha256": "6f8b1b680e22478b913905bc072cd51e3beb8fdf792e20cc24aecbb3bef126a6",
+        "native_references_sha256": "d65d872390b22fc002f67197cefc18950542759adb5080561f79c5704bc5b162",
+        "native_samples_sha256": "767bc7c26c5cdf59ca24ca621187c410f4d7cd61fb96df4346f276414b1becdd",
+        "chrome_predictions_sha256": "9ed9a7a10604e7a7015976d4f228187984b4046d155e132778dd97e04b6275db"
+      },
+      "w8a8": {
+        "native_report_sha256": "457af1032b2f470cb2260d4335baa0fd3456abf4ebc3d63651129eadc4c58a5b",
+        "chrome_report_sha256": "1e9b88454c9b8246180d6c8a9e76a7d268fe4e04d407af6ac91cd1ecf267627f",
+        "native_references_sha256": "f6341d591b2f1ed07b5736940de895d18b3fba0277f97bf7072165b3fc5f5fb2",
+        "native_samples_sha256": "a6e054b3e62260b43bab9490a705da4762b8bd2dbba5681fef97644cb1ae7010",
+        "chrome_predictions_sha256": "fff12815e19152d3a78333fd0a6193819e00f3434139d881d72038da8d9ac182"
+      },
+      "conv8-linear4": {
+        "native_report_sha256": "b602f3e4662ed9d24a1e15440c5a498790eda1fbcfb98910f7e08f3508f96db7",
+        "chrome_report_sha256": "769c0c5d065e9f4fbe08139192cb23f13ba5cef9953d531bf1da8cb2a5d76825",
+        "native_references_sha256": "86b5ee9385b5400909300ff0e2182dbe1fef89fe57ce8e00000140b3e87d9145",
+        "native_samples_sha256": "99f2c9d3eb24645f19f66de7993c01381260f2d39e59c1e68fb303245f932d38",
+        "chrome_predictions_sha256": "2d7789df0416699b0b4997180f819043c5eda05f2e899e2fd314d09b9225a46f"
+      },
+      "conv4-linear4": {
+        "native_report_sha256": "fe6080c759fa58aa0d6429358b969dba8e280c4449ae5fa7f871b12a318de5ec",
+        "chrome_report_sha256": "040260dd6af985889fd44803b6eae6f964a253c1a37bf7bd75b29d732cb8cd0d",
+        "native_references_sha256": "5aef5ad4f45bf95dda8673572e94f300e1fa525f880b7e5106be47e60b282db5",
+        "native_samples_sha256": "0bd4d4418221a034af8be534a1c339d7985181a7b4881c536f938f40854fe21b",
+        "chrome_predictions_sha256": "bb624ff0bfec4ef1a08947c6d1101f294de75fcc738459605686af19db5f23b4"
+      },
+      "conv4-linear3": {
+        "native_report_sha256": "f8486d99d2f150ac2503be7264f7d484d5de6fb26dc80ff531dc7c9c3940814f",
+        "chrome_report_sha256": "74b7a2ddaae0a82c175596b1b94d223d547a118f86292558a65e1c978db735a5",
+        "native_references_sha256": "8fbf935c6bd0543bca290f8ceb7cb084e52955fa368645fdfd0aa4ad81122da2",
+        "native_samples_sha256": "00a8ef8c9a065242a8a360322cbe53a19717bbcda288f387be0067482be01115",
+        "chrome_predictions_sha256": "16911679992adb4adaeff81a8b7db9dc939ac9efe8d99f639a50cc4a27559043"
+      },
+      "conv4-linear2": {
+        "native_report_sha256": "b95e750679f6106f158c42934b354d5589e0ddda0deb103fb85afd7706cc48cc",
+        "chrome_report_sha256": "b0a48f82815d0932befed7a84240022ca09b50ccd5d8bc8766eddf4b922e9d12",
+        "native_references_sha256": "28d0d1a6028f254af2b39afac772fcf25abc557d981ff29b4dfb502c8ee17167",
+        "native_samples_sha256": "1a90beaebd98ae41f8ecfb9d0b649cbd623f607bc4a2a706efdbf1f03180fac7",
+        "chrome_predictions_sha256": "e173c6117de44c66e8fd95fa5e3c3e0ac8235dad9a971dc92e79539de1ef1279"
+      },
+      "conv4-linear3-mse-ptq": {
+        "native_report_sha256": "caeea3d85081aac5a30d6e78cdea9d50dbcfff758f8558c7d65e364d3faf4e4c",
+        "chrome_report_sha256": "8461a1c7051721c04a99165c5dcda3009b3a80acb7c1d3f010460186f09ce575",
+        "native_references_sha256": "90c608180ba3c0be60bdac5aeca74822ae040714a9091e3818b7aeb67de7540b",
+        "native_samples_sha256": "2b8a00ba07d9c3b3e3311c8f38ec033f2e1155041b6a49ea948b921429c230be",
+        "chrome_predictions_sha256": "e036eac805bf8d7252a6e522c82d9e4a34b722a97707d634c935a3f2bc3f0a5f"
+      },
+      "conv4-linear3-qat": {
+        "native_report_sha256": "e5cb862a600c71fa215d690988494196e9686de659bc904586723e8699bfe6c3",
+        "chrome_report_sha256": "f6ff0ee82ac1b825dc9a01da56070fe296d7debd9acc18f90a4c5bb388f60c6e",
+        "native_references_sha256": "4e485355a46f106bbcb6398ee0153de8abd7c1e5e672b601d429354db234cd55",
+        "native_samples_sha256": "92e0cacd4539012522caa8b42ccfd95d9b287c58f19d8893965b19cb42dd88ef",
+        "chrome_predictions_sha256": "1d3f7cce57414c88d739bbc0d027ab924673803e2cdd41d31baf4f1a83e43b56"
+      },
+      "conv4-linear2-mse-ptq": {
+        "native_report_sha256": "323321465f70d06053f9b2d80ede755341d91a1a1cc652ea119b26fc67af0867",
+        "chrome_report_sha256": "d3c9b0a287335143ff60cc096b6534d6e59d03ceba0cf5a4295f181b1e6bc90d",
+        "native_references_sha256": "522b83f218a8513dfa93d58bc2477f713de04c997be12c0db7f8593da3d34e8f",
+        "native_samples_sha256": "52d2807547bbaa9613bfab41565355258976b26c29732b7cef607271c2f5432f",
+        "chrome_predictions_sha256": "74e19f6929867116ebfe38a42dc62d3ad7f02803c12bc346924bb5085f1c0679"
+      },
+      "conv3-linear3-mse-ptq": {
+        "native_report_sha256": "a02ef739b1611c06a9951023b3415e91c5b061f70ed7d13f56c1b42f6eb6543e",
+        "chrome_report_sha256": "493a913e49451a20be74066a91d0a6cd054dd7de923207316459a606132859d9",
+        "native_references_sha256": "23de02e1e61ae79a56e6d78ed6ed9d84b698b86bb91c2deb48f5a8f9f352937d",
+        "native_samples_sha256": "fba7adf06bfa6648022b1b65bb7344da034fdc8d361169013180dd4c6b6b1008",
+        "chrome_predictions_sha256": "bd2e7c8d37500a875bad38063bc655b523f8efbfc7245d5db3cef2e2afe37fbe"
+      },
+      "conv3-linear3-qat": {
+        "native_report_sha256": "180c85f41ce5a32f31ff23d2f0e03f9eec7c02b78f5cbb54e9bb4661a806dfc1",
+        "chrome_report_sha256": "e6edbeb69925442fede9123b9a94f835a35686be31ab4a3904fe18b6a8d3599c",
+        "native_references_sha256": "4c22c28b2604bc5023e16e9b5875de58039f1947e29c7bbd85ae65b964aa7be2",
+        "native_samples_sha256": "64599afbfcfb6d9b3f5e844118e92b599341b0a4a1815f6b20f35a47fa24f6f2",
+        "chrome_predictions_sha256": "6cbed796a7f2e5db51d98b77636980c106af24bd23a1a29c1e32ce16537a8ed7"
+      },
+      "conv8-linear2-importance": {
+        "native_report_sha256": "d1f398321731c386825a93c0307d63224f2e1cc0cf7590f86fbff071d1b876c1",
+        "chrome_report_sha256": "c17a7ccfe838dcb6e4bacdd4e0dece97a7a110c1673472b0348bbc0bc5f6fd24",
+        "native_references_sha256": "732e7448ec869575366b0c646663f9c5329a162e10b001bfe0d7d93dff38899a",
+        "native_samples_sha256": "5f36efc675980c21e7bc044ba664385cef3c7eb70a6aec235060b021faecb48a",
+        "chrome_predictions_sha256": "078462c6dcd798a1084ca461781a74f0418c50af3dc74b66a3c2552466e80bef"
+      },
+      "conv8-linear2-head-qat": {
+        "native_report_sha256": "8c49e1bcbef4edb20a9f90ea368f1087d72abadef251a897becc6778ce96b860",
+        "chrome_report_sha256": "e710a7b2e229c23bf5a6c850dd7a0bb4b15093d32d05d7c28373743123257ab3",
+        "native_references_sha256": "191dc7f183cd41ade3fd9af3f539bfe261f30803d8434edb76d8bb6d874796ae",
+        "native_samples_sha256": "3534e70479a20a5039f477a368420a42c747d311b076be724a8c36d9d5316e6f",
+        "chrome_predictions_sha256": "876d38c3ae0b189f5480ab1aab4bee62bbbe3e27c1d4ce2e1e56ca04504ae837"
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>영수증 읽기 설정</title><link rel="stylesheet" href="options.css"></head>
+<body><main>
+  <header><p class="eyebrow">unaveraged</p><h1>영수증 읽기 설정</h1>
+  <p>이 브라우저에 설정을 저장합니다. 영수증과 추론 결과는 기기 밖으로 전송하지 않습니다.</p></header>
+  <form id="settings-form">
+    <fieldset><legend>감시할 페이지와 영역</legend>
+      <label for="matches">URL 패턴 — 한 줄에 하나</label>
+      <textarea id="matches" rows="4" spellcheck="false" placeholder="https://example.com/*"></textarea>
+      <p class="hint">정확한 호스트를 입력하세요. 경로에는 *를 사용할 수 있습니다. 비우면 자동 감시가 꺼집니다. 새 사이트를 저장하면 접근 권한을 요청하며, 해당 페이지를 새로고침해야 적용됩니다.</p>
+      <label for="container_selector">감시 영역 CSS 선택자</label>
+      <input id="container_selector" type="text" spellcheck="false" placeholder="#rcpt_form">
+      <p class="hint">비우면 문서 전체를 감시합니다. 아래 선택자는 이 영역 안에서 찾습니다.</p>
+      <label for="image_selectors">영수증 이미지 CSS 선택자 — 우선순위대로 한 줄에 하나</label>
+      <textarea id="image_selectors" rows="3" spellcheck="false" required></textarea>
+      <label for="question_selectors">질문 CSS 선택자 — 우선순위대로 한 줄에 하나</label>
+      <textarea id="question_selectors" rows="3" spellcheck="false" required></textarea>
+      <label for="answer_selectors">답변 입력란 CSS 선택자 — 우선순위대로 한 줄에 하나</label>
+      <textarea id="answer_selectors" rows="4" spellcheck="false" required></textarea>
+    </fieldset>
+    <fieldset><legend>추론과 메모리</legend>
+      <div class="columns"><div><label for="worker_count">동시 추론 워커 수</label><input id="worker_count" type="number" min="1" max="4" step="1" required></div>
+      <div><label for="max_pending">처리 중·대기 요청 최대 수</label><input id="max_pending" type="number" min="1" max="64" step="1" required></div></div>
+      <p class="hint">각 워커가 모델을 별도로 로드하므로 워커 수를 늘리면 메모리 사용량도 증가합니다. 한 번의 모델 추론은 영수증 1개를 처리합니다.</p>
+      <label for="idle_timeout_ms">마지막 추론 후 메모리를 해제할 유휴 시간(ms)</label>
+      <input id="idle_timeout_ms" type="number" min="10000" max="1800000" step="1000" required>
+      <p class="hint">기본 60,000ms = 1분. 10초~30분 사이로 설정합니다. 요청이 끝난 뒤 유휴 시간이 지나면 추론 워커와 모델 메모리를 해제하고, 다음 요청에서 다시 로드합니다. 페이지 감시 UI는 남아 있습니다.</p>
+    </fieldset>
+    <fieldset><legend>답변 제출</legend>
+      <label class="check"><input id="auto_submit" type="checkbox">답변 입력 후 자동 제출</label>
+      <p class="hint">기본값은 꺼짐입니다. 켜면 지정한 제출 버튼을 자동으로 누릅니다.</p>
+      <label for="submit_selector">제출 버튼 CSS 선택자</label>
+      <input id="submit_selector" type="text" spellcheck="false" placeholder="button[type='submit']">
+    </fieldset>
+    <fieldset><legend>히트맵 표시</legend>
+      <label class="check"><input id="heatmap_enabled" type="checkbox" checked>영수증 위에 모델 attention 표시</label>
+      <p class="hint">기본값은 켜짐입니다. 실제 추론에서 계산된 공간별 attention을 원본 이미지 위에 겹쳐 표시합니다. 확장 팝업에서도 최근 영수증과 히트맵을 확인할 수 있습니다.</p>
+    </fieldset>
+    <fieldset><legend>프로파일링</legend>
+      <label class="check"><input id="profiling" type="checkbox">추론 프로파일링과 실행 기록</label>
+      <p class="hint">기본값은 꺼짐입니다. 연산별 실행 시간과 메모리 요약, 워커·대기열·캐시·오류 기록을 확인할 수 있습니다. 기록을 켜면 처리 비용이 늘어날 수 있습니다.</p>
+    </fieldset>
+    <div class="actions"><button id="save-settings" type="submit">설정 저장</button><button id="reset-settings" type="button" class="secondary">기본값 불러오기</button></div>
+    <p id="save-status" role="status" aria-live="polite"></p>
+  </form>
+  <section aria-labelledby="diagnostics-title"><h2 id="diagnostics-title">현재 실행 상태</h2>
+    <p class="hint">새로고침할 때만 조회합니다. 상태 조회는 추론을 시작하거나 유휴 시간을 연장하지 않습니다. JSON은 이 기기에 파일로 저장됩니다.</p>
+    <div class="actions"><button id="refresh-diagnostics" type="button" class="secondary">상태 새로고침</button><button id="export-diagnostics" type="button" class="secondary" disabled>JSON 저장</button><button id="clear-diagnostics" type="button" class="secondary">기록 지우기</button></div>
+    <pre id="diagnostics" aria-live="polite">아직 조회하지 않았습니다.</pre>
+  </section>
+  <footer><a href="../../privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></footer>
+</main><script src="site-config.js"></script><script type="module" src="options.js"></script></body></html>

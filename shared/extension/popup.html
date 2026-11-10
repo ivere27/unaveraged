@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receipt Reader</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header class="popup-header"><div><p class="brand">unaveraged</p><h1>영수증 질문 답변</h1></div><span class="local-badge">기기 내 처리</span></header>
+  <main>
+    <div class="status-row"><span class="status-dot" aria-hidden="true"></span><p id="status" role="status">상태 확인 중…</p></div>
+    <section class="preview-card" aria-labelledby="preview-title">
+      <div class="card-heading"><h2 id="preview-title">최근 읽은 영수증</h2><button id="refresh-preview" class="icon-button" type="button" title="상태와 최근 영수증 새로고침" aria-label="상태와 최근 영수증 새로고침">↻</button></div>
+      <div id="preview-empty" class="preview-empty">
+        <svg width="38" height="44" viewBox="0 0 38 44" fill="none" aria-hidden="true"><path d="M8 3h22v37l-4-3-4 3-4-3-4 3-6-3V3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13 12h12M13 18h12M13 24h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <p>영수증을 읽으면 여기에 표시됩니다.</p><span>이미지와 결과는 기기 안에서만 처리합니다.</span>
+      </div>
+      <div id="preview-frame" class="preview-frame" hidden><img id="preview-image" alt="최근 추론한 영수증"></div>
+      <div class="heatmap-controls"><label class="toggle-label" for="show-heatmap"><input id="show-heatmap" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span>히트맵 겹쳐 보기</span></label><span class="attention-label">Attention</span></div>
+      <div id="heatmap-legend" class="heatmap-legend" hidden><span>낮음</span><span class="heatmap-scale" aria-hidden="true"></span><span>높음</span></div>
+      <p id="heatmap-note" class="heatmap-note">모델이 참고한 영역을 이미지 위에서 확인하세요.</p>
+      <div id="result-summary" class="result-summary" hidden><div><span class="summary-label">읽은 답변</span><strong id="preview-answer">—</strong></div><span id="preview-duration"></span></div>
+    </section>
+    <p class="submit-hint" id="submit-hint">입력된 답을 확인한 뒤 페이지에서 제출하세요.</p>
+    <a id="open-options" class="settings-link" href="options.html" target="_blank" rel="noopener"><span>감시·추론·프로파일링 설정</span><span aria-hidden="true">↗</span></a>
+    <details class="sites"><summary>감시 중인 사이트</summary><ul id="sites"></ul></details>
+  </main>
+  <footer><span>영수증 읽기 도우미</span><a href="../../privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></footer>
+  <script src="site-config.js"></script><script src="heatmap-view.js"></script><script type="module" src="popup.js"></script>
+</body></html>

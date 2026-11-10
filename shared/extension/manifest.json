@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "offscreen"
+  ],
+  "background": {
+    "service_worker": "shared/extension/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "shared/extension/popup.html"
+  },
+  "icons": {
+    "16": "shared/assets/icons/icon16.png",
+    "32": "shared/assets/icons/icon32.png",
+    "48": "shared/assets/icons/icon48.png",
+    "128": "shared/assets/icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self';"
+  }
+}

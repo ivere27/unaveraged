@@ -1,0 +1,32 @@
+{
+  "name": "unaveraged",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "config": {
+    "volvoxai_version": "0.9.0"
+  },
+  "scripts": {
+    "build": ".venv/bin/python shared/build.py --model all",
+    "package": ".venv/bin/python shared/build.py --model all --package-only",
+    "pages": "make pages",
+    "test:example": "node example/browser.mjs",
+    "test": "node --test shared/tests/*.test.mjs digit/*.test.mjs vqa/*.test.mjs",
+    "test:browser": "node shared/tests/browser.mjs --model all --precision default --production",
+    "test:lifecycle": "node shared/tests/browser.mjs --model all --precision default --lifecycle",
+    "test:firefox": "node shared/tests/firefox-browser.mjs --model all --precision default",
+    "test:firefox:lifecycle": "node shared/tests/firefox-browser.mjs --model all --precision default --lifecycle"
+  },
+  "devDependencies": {
+    "puppeteer": "25.3.0",
+    "@puppeteer/browsers": "3.0.6"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "description": "unaveraged receipt readers with Digit QAT and VQA W4A8 Chrome and Firefox extension builds",
+  "dependencies": {
+    "volvoxai-lite": "0.9.0"
+  }
+}

@@ -1,0 +1,44 @@
+.cache/
+.venv/
+dist/
+node_modules/
+test-results/
+__pycache__/
+*.pyc
+.env
+.env.*
+*.pem
+*.key
+# Keep private calibration/evaluation data outside this repository.
+data/
+eval/
+calibration/
+datasets/
+annotations/
+# Private evaluation records, preprocessed receipt pixels and browser profiles.
+*.private.json
+*.private.jsonl
+*-private.json
+*.f32
+receipt-reader-chrome-*/
+*.onnx
+*.safetensors
+*.pt
+*.pth
+
+# Public synthetic calibration release: allow only its enumerated files.
+!/synth/
+/synth/*
+!/synth/README.md
+!/synth/manifest.json
+!/synth/SHA256SUMS
+!/synth/images/
+/synth/images/*
+!/synth/images/000[01][0-9][0-9].png
+!/synth/images/0002[0-4][0-9].png
+!/synth/images/00025[0-5].png
+!/synth/annotations/
+/synth/annotations/*
+!/synth/annotations/000[01][0-9][0-9].json
+!/synth/annotations/0002[0-4][0-9].json
+!/synth/annotations/00025[0-5].json
