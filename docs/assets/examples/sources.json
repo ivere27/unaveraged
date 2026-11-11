@@ -1,0 +1,93 @@
+{
+  "format": "unaveraged-public-synthetic-examples/v1",
+  "license": "Apache-2.0",
+  "license_file": "../../../LICENSE",
+  "vqa_notice_file": "../../../NOTICE",
+  "scope": "Public model-repository synthetic examples for documentation; not captured user receipts. Receipt contents and original question/answer pairs come from pinned public metadata; the demo derives additional question presets from these contents.",
+  "examples": [
+    {
+      "asset": "digit-receipt-ko.jpg",
+      "model": "digit",
+      "repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+      "revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0",
+      "source_path": "examples/receipt_ko.jpg",
+      "source_url": "https://huggingface.co/ivere27/tiny-receipt-reader-digit-slots-2m/resolve/c9fa07886f99334ea820bfe312d6b4771d9460b0/examples/receipt_ko.jpg",
+      "model_card_url": "https://huggingface.co/ivere27/tiny-receipt-reader-digit-slots-2m/blob/c9fa07886f99334ea820bfe312d6b4771d9460b0/README.md",
+      "synthetic": true,
+      "synthetic_evidence": "Pinned model card describes examples/ as two synthetic receipts.",
+      "sha256": "da88646394d2b282ab9ea7bf3ca7021c03af38d3402c18267c6145490e2a6d53",
+      "width": 670,
+      "height": 320,
+      "modifications": "none; byte-for-byte copy of the published JPEG",
+      "questions": [
+        {
+          "question": "가게 전화번호의 뒤에서 1번째 숫자는 무엇입니까?",
+          "answer": "6"
+        },
+        {
+          "question": "영수증의 가게 주소에서 도로명 뒤 숫자는 무엇입니까?",
+          "answer": "699"
+        }
+      ],
+      "receipt": {
+        "phone_digits": "5008936",
+        "street_no": "699"
+      },
+      "receipt_source": {
+        "path": "examples/examples.json",
+        "sha256": "8cbc57b280d698ddb703fd8674cd60bd2bab43ed4994f0b6ddf193b2a940ac1a",
+        "url": "https://huggingface.co/ivere27/tiny-receipt-reader-digit-slots-2m/resolve/c9fa07886f99334ea820bfe312d6b4771d9460b0/examples/examples.json"
+      }
+    },
+    {
+      "asset": "vqa-receipt-ko.jpg",
+      "model": "vqa",
+      "repository": "ivere27/tiny-receipt-vqa-structured-qa-21m",
+      "revision": "f536c6ed181ca88929214f0bbc08f126f148c7ae",
+      "source_path": "examples/receipt_ko.jpg",
+      "source_url": "https://huggingface.co/ivere27/tiny-receipt-vqa-structured-qa-21m/resolve/f536c6ed181ca88929214f0bbc08f126f148c7ae/examples/receipt_ko.jpg",
+      "model_card_url": "https://huggingface.co/ivere27/tiny-receipt-vqa-structured-qa-21m/blob/f536c6ed181ca88929214f0bbc08f126f148c7ae/README.md",
+      "synthetic": true,
+      "synthetic_evidence": "Pinned model card and examples/family_examples.json identify the synthetic validation split; no heldout receipts.",
+      "sha256": "0c9e7b52a5205eddd7944046a6db35eac2b2034535bfef34edc23b666e41d5ff",
+      "width": 672,
+      "height": 320,
+      "modifications": "none; byte-for-byte copy of the published JPEG",
+      "questions": [
+        {
+          "question": "가게 이름은 무엇입니까?",
+          "answer": "착한 도매슈퍼마켓"
+        },
+        {
+          "question": "과일류 개수는 몇 개입니까?",
+          "answer": "4"
+        }
+      ],
+      "receipt": {
+        "store": "착한 도매슈퍼마켓",
+        "address": "의정부시 도봉구 엄치길 875",
+        "items": [
+          {
+            "name": "과일류",
+            "unit_price": 100,
+            "quantity": 4,
+            "total": 400
+          },
+          {
+            "name": "더블샷 녹차",
+            "unit_price": 400,
+            "quantity": 8,
+            "total": 3200
+          }
+        ],
+        "phone_digits": "9113125",
+        "street_no": "875"
+      },
+      "receipt_source": {
+        "path": "examples/family_examples.json",
+        "sha256": "7c52031b6946fe495c44b458f6c4ea9a7486d005016e6bf2404ea80294e338b2",
+        "url": "https://huggingface.co/ivere27/tiny-receipt-vqa-structured-qa-21m/resolve/f536c6ed181ca88929214f0bbc08f126f148c7ae/examples/family_examples.json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+name: Build and publish example
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Publish publicly on GitHub Pages (unchecked saves a preview only)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.10'
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+      - name: Install documentation renderer only
+        run: python3 -m pip install -r docs/requirements.txt
+      - name: Download models generated locally
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release download models --repo "$GITHUB_REPOSITORY" \
+            --dir dist/models --pattern 'unaveraged-*-chrome.zip' --pattern SHA256SUMS; then
+            echo '::error::Local model packages are required. Run make package and make release locally before deploying Pages.'
+            exit 1
+          fi
+      - name: Check documentation and staging
+        run: python3 -m unittest shared.tests.test_docs shared.tests.test_pages
+      - name: Stage current source with verified local model bytes
+        run: >-
+          python3 shared/pages.py --release-dir dist/models --tag models
+          --current-source --source-commit "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY"
+      - name: Save a downloadable preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-preview
+          path: dist/pages
+          include-hidden-files: true
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' || inputs.deploy
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/pages
+
+  deploy:
+    if: github.event_name == 'push' || inputs.deploy
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

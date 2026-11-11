@@ -1,0 +1,18 @@
+# Build-time only. Pinned to the Linux x86_64 environment used for PTQ.
+-r docs/requirements.txt
+volvoxai==0.9.0
+Pillow==12.3.0
+numpy==2.2.6
+onnx==1.23.0
+protobuf==7.35.1
+safetensors==0.8.0
+ml_dtypes==0.6.0
+typing_extensions==4.16.0
+# Reference validation only; never used by PTQ or the installed extension.
+onnxruntime==1.23.2
+coloredlogs==15.0.1
+humanfriendly==10.0
+flatbuffers==25.12.19
+packaging==26.3
+sympy==1.14.0
+mpmath==1.3.0

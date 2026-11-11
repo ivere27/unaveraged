@@ -1,0 +1,51 @@
+{
+  "id": "digit",
+  "slug": "unaveraged-digit",
+  "name": "unaveraged Digit",
+  "version": "0.1.0",
+  "description": "Read supported receipt questions on your device and fill the answer field for review.",
+  "channel": "receipt-digit-reader/v1",
+  "ui": {
+    "title": "영수증 숫자 읽기",
+    "record_fields": [
+      {
+        "key": "phone",
+        "label": "전화번호"
+      },
+      {
+        "key": "street",
+        "label": "주소 숫자"
+      }
+    ],
+    "panel_id": "receipt-digit-reader-panel"
+  },
+  "model": {
+    "repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+    "revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0",
+    "common_files": [
+      "config.json",
+      "manifest.json",
+      "LICENSE",
+      "examples/receipt_en.jpg",
+      "examples/receipt_ko.jpg",
+      "question_router.py",
+      "examples/examples.json"
+    ],
+    "variants": {
+      "fp32": [
+        "model.onnx"
+      ]
+    },
+    "package_files": [
+      "graph.json",
+      "model.safetensors",
+      "manifest.json"
+    ]
+  },
+  "cache_by_question": false,
+  "examples": "examples/examples.json",
+  "scripts": [
+    "adapter.js"
+  ],
+  "default_precision": "conv4-linear2"
+}
