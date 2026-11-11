@@ -1,0 +1,44 @@
+{
+  "format": "unaveraged-frozen-vqa-profiles/v1",
+  "default_candidate": "w4a8",
+  "selection_scope": "Existing 2000-record phone-digit/street-number evaluation; not an independent general VQA accuracy qualification.",
+  "profiles": {
+    "w4a8": {
+      "experiment_variant": "w4a8",
+      "status": "frozen-evaluated-candidate",
+      "frozen_on": "2026-10-28",
+      "model_repository": "ivere27/tiny-receipt-vqa-structured-qa-21m",
+      "model_revision": "f536c6ed181ca88929214f0bbc08f126f148c7ae",
+      "source_manifest_sha256": "3097c49943685c67b2ed469a894d0c4704c0cc046f97367bc8c119985b8eeee8",
+      "source_sha256": {
+        "encoder_model.onnx": "0e2206c54756b15d697d2bbd8d22bb68d0d2475d0323965ca03a14fb186e6eb0",
+        "decoder_model.onnx": "b918a9de531bad205990acff28a2a7e2244b14229c312ed6b2f75d0540d6a6a2",
+        "config.json": "e18e266da200b9b915628c1b8f633cb523520287e2d8f75c8093e3f4d6575f7e",
+        "vocab.json": "ae19bf56556649d75e72450ff6c7d43895190404c15dffeb6412dce5cc4d2c80",
+        "manifest.json": "c43bb3f34779e929d556f6e786890568f4542cd7d354d1292e7ecc6eac2bb828"
+      },
+      "sha256": {
+        "config.json": "e18e266da200b9b915628c1b8f633cb523520287e2d8f75c8093e3f4d6575f7e",
+        "vocab.json": "ae19bf56556649d75e72450ff6c7d43895190404c15dffeb6412dce5cc4d2c80",
+        "encoder/graph.json": "c9f1a40e5d0a4d057b03fcb0ee3c65b062768a1991e8b86d674a192bcd20a1c1",
+        "encoder/model.safetensors": "f6f92b5707de27bcc229e1bce2ff54510dfee873c4a84e8d9b366669a997c175",
+        "decoder/graph.json": "ae02afd8c84c2927068dbe4a8ef0a77bcec646b3274d6f83b6df6f02e19f2825",
+        "decoder/model.safetensors": "5cfd2a08db56605f8ff1aa23ef7786f83e1415e28d57a2ec542e1a0f6de1312c",
+        "shared/token-embedding.safetensors": "2ddc31c77c47498d65ee5604f5ee202704aa32a4878b10cf1c171618306a4a60"
+      },
+      "linear_weight_bits": 4,
+      "linear_group_size": 32,
+      "conv_weight_bits": 8,
+      "activation_dtype": "int8",
+      "packed_arithmetic": "dynamic-i8",
+      "calibration_samples": 256,
+      "tokenizer": {
+        "type": "byte_fallback_bpe",
+        "version": 1,
+        "vocab_size": 1536,
+        "normalization": "NFC",
+        "tokenizer_hash": "5801826ac9092bdc984210af805d2ff20f0398b80adaf5963ef13b04771a8584"
+      }
+    }
+  }
+}

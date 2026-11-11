@@ -1,0 +1,103 @@
+{
+  "format": "unaveraged-frozen-digit-profiles/v1",
+  "recommended_candidate": "conv4-linear4",
+  "compact_candidate": "conv4-linear3",
+  "reproducible_default": "w8a8",
+  "selection_scope": "Candidates selected on the existing 2000-image development comparison; no independent accuracy qualification claimed.",
+  "profiles": {
+    "conv8-linear4": {
+      "experiment_variant": "c8-l4-mse",
+      "role": "reference",
+      "status": "frozen-evaluated-candidate",
+      "frozen_on": "2026-10-25",
+      "graph_weight_bytes": 2797157,
+      "sha256": {
+        "graph.json": "3e3ff8f065101cf2071b4090ff556cdfe87b5dc611516c438c3ff2ae4c25bf2f",
+        "model.safetensors": "ff8ad0ef853d4ead2dedc12c20d5fdb69421379aded8c09dd4b8c6914a6f58cd"
+      },
+      "conv_weight_bits": 8,
+      "linear_weight_bits": 4,
+      "conv_algorithm": "rtn",
+      "linear_algorithm": "mse-clip",
+      "linear_group_size": 32,
+      "activation_dtype": "int8",
+      "packed_arithmetic": "dynamic-i8",
+      "calibration_samples": 256,
+      "model_repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+      "model_revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0"
+    },
+    "conv4-linear4": {
+      "experiment_variant": "c4-l4-mse",
+      "role": "balanced",
+      "status": "frozen-evaluated-candidate",
+      "frozen_on": "2026-10-25",
+      "graph_weight_bytes": 1825097,
+      "sha256": {
+        "graph.json": "968dbaeecff599d9a2b4c77cd28ef9f4f23a02b98cfbd33b253dc0fb8974abab",
+        "model.safetensors": "eeba91def9302efbdb18cb76b6dd631d3cb8d215050c40a33e2ce2487f716053"
+      },
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 4,
+      "conv_algorithm": "mse-clip",
+      "linear_algorithm": "mse-clip",
+      "linear_group_size": 32,
+      "activation_dtype": "int8",
+      "packed_arithmetic": "dynamic-i8",
+      "calibration_samples": 256,
+      "model_repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+      "model_revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0"
+    },
+    "conv4-linear3": {
+      "experiment_variant": "c4-l3-importance-convimportance",
+      "role": "compact",
+      "status": "frozen-evaluated-candidate",
+      "frozen_on": "2026-10-25",
+      "graph_weight_bytes": 1775585,
+      "sha256": {
+        "graph.json": "8d9d1b7e3e3a9dff10ce011f40f02c6cbe8dfe66064fd344eae569bf2bdf5a5d",
+        "model.safetensors": "539b821e87cdc4b1b9e811e9d6f0191c7f13fc85e7f98e6adae9fc3ef90b4167"
+      },
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 3,
+      "conv_algorithm": "importance",
+      "linear_algorithm": "importance",
+      "linear_group_size": 32,
+      "activation_dtype": "int8",
+      "packed_arithmetic": "dynamic-i8",
+      "calibration_samples": 256,
+      "model_repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+      "model_revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0"
+    },
+    "conv4-linear2": {
+      "experiment_variant": "joint-c4-l2-synth",
+      "role": "default",
+      "status": "frozen-evaluated-candidate",
+      "frozen_on": "2026-10-28",
+      "graph_weight_bytes": 1726081,
+      "sha256": {
+        "graph.json": "2ebaf4611059b396a7fddc3ddea4c8be5dc0993a6065ef65de593e7896ce1d24",
+        "model.safetensors": "50d5e4e07abe5b87204f20fe5f3f7b5e9f40c15a10abcd23a185ea1890b9748c"
+      },
+      "conv_weight_bits": 4,
+      "linear_weight_bits": 2,
+      "conv_algorithm": "mse-clip",
+      "linear_algorithm": "mse-clip",
+      "linear_group_size": 32,
+      "activation_dtype": "int8",
+      "packed_arithmetic": "dynamic-i8",
+      "calibration_samples": 224,
+      "model_repository": "ivere27/tiny-receipt-reader-digit-slots-2m",
+      "model_revision": "c9fa07886f99334ea820bfe312d6b4771d9460b0",
+      "method": "volvoxai-qat",
+      "training": {
+        "method": "joint-CUDA-weight-QAT-synth",
+        "selected_epoch": 2,
+        "activation_qat": false,
+        "dataset": "224 bundled procedural synthetic receipts (synth/)",
+        "post_training": "224-image static convolution calibration on bundled synth receipts; grouped MSE dense packing",
+        "selection": "Validation-selected checkpoint on 32 heldout synth receipts; 2000-record development retest, no independent qualification"
+      }
+    }
+  },
+  "default_candidate": "conv4-linear2"
+}

@@ -1,0 +1,49 @@
+.receipt-reader-panel {
+  all: initial; box-sizing: border-box; position: fixed; right: 20px; bottom: 20px;
+  z-index: 2147483647; display: block; width: 296px; max-width: calc(100vw - 32px);
+  border: 1px solid #d5e5dd; border-radius: 14px; background: #fff; color: #163d2d;
+  padding: 18px; box-shadow: 0 6px 28px #14332524; font: 13px/1.5 system-ui, sans-serif;
+  text-align: left; direction: ltr;
+}
+.receipt-reader-panel[hidden] { display: none; }
+.receipt-reader-panel * { box-sizing: border-box; }
+.receipt-reader-panel header { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.receipt-reader-panel header strong { font-size: 15px; font-weight: 700; }
+.receipt-reader-panel .rdr-header-actions { display: flex; align-items: center; gap: 8px; }
+.receipt-reader-panel header span { font-size: 10px; color: #4f7564; white-space: nowrap; }
+.receipt-reader-panel .rdr-close {
+  all: unset; display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 5px; font-size: 16px; line-height: 1;
+  color: #6a887b; cursor: pointer; text-align: center;
+}
+.receipt-reader-panel .rdr-close:hover { background: #eef5f1; color: #163d2d; }
+.receipt-reader-panel .rdr-status { margin: 12px 0; color: #416253; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.receipt-reader-panel .rdr-status[data-error=true] { color: #a1312c; }
+.receipt-reader-panel dl { margin: 0; padding: 10px 12px; border-radius: 8px; background: #f4f8f6; }
+.receipt-reader-panel dl div { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+.receipt-reader-panel dt { color: #5a7267; font-size: 12px; }
+.receipt-reader-panel dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+.receipt-reader-panel .rdr-answer { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+.receipt-reader-panel output { color: #107844; font-size: 22px; font-weight: 700; }
+.receipt-reader-panel footer { display: flex; gap: 8px; }
+.receipt-reader-panel .rdr-heatmap { padding: 0 0 12px; }
+.receipt-reader-panel .rdr-heatmap-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.receipt-reader-panel .rdr-toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: #245d41; }
+.receipt-reader-panel .rdr-toggle-label input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; pointer-events: none; }
+.receipt-reader-panel .rdr-toggle-track { position: relative; width: 32px; height: 18px; border-radius: 12px; background: #c8d4cc; transition: background .2s ease; flex-shrink: 0; }
+.receipt-reader-panel .rdr-toggle-track::after { content: ''; position: absolute; width: 12px; height: 12px; top: 3px; left: 3px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: left .2s ease; }
+.receipt-reader-panel .rdr-toggle-label input:checked + .rdr-toggle-track { background: #147d4a; }
+.receipt-reader-panel .rdr-toggle-label input:checked + .rdr-toggle-track::after { left: 17px; }
+.receipt-reader-panel .rdr-toggle-label input:focus-visible + .rdr-toggle-track { outline: 2px solid #147d4a; outline-offset: 2px; }
+.receipt-reader-panel .rdr-attention-badge { font-size: 10px; color: #5a7267; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.receipt-reader-panel .rdr-heatmap small { display: block; margin-top: 5px; font-size: 10px; line-height: 1.5; color: #5a7267; }
+.receipt-reader-panel button {
+  flex: 1; min-height: 36px; padding: 6px 10px; border: 1px solid #c8dcd1;
+  border-radius: 7px; color: #245d41; background: #fff; font: 600 12px system-ui, sans-serif; cursor: pointer;
+}
+.receipt-reader-panel button[data-action=fill] { color: #fff; background: #147d4a; border-color: #147d4a; }
+.receipt-reader-panel button:disabled { opacity: .45; cursor: default; }
+.receipt-reader-panel button:focus-visible { outline: 3px solid #93ccaf; outline-offset: 2px; }
+@media (max-width: 600px) {
+  .receipt-reader-panel { right: 12px; bottom: 12px; width: 260px; padding: 12px; }
+}

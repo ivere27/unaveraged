@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="브라우저에서 실행하는 영수증 모델과 실제 어텐션 데모">
+  <title>Receipt demo · unaveraged</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#demo">데모로 이동</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html">unaveraged<span class="brand-dot"></span></a>
+    <h1 class="demo-label">Receipt demo</h1>
+    <a class="project-link" href="../index.html">프로젝트 <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="workspace" id="demo" aria-label="영수증 모델 데모">
+      <div class="visual-panel">
+        <div class="sample-bar"><label for="sample">예제</label><select id="sample" aria-label="합성 영수증 예제" disabled><option>불러오는 중…</option></select><span class="sample-badge">합성</span></div>
+        <div class="receipt-paper"><img id="receipt-image" width="672" height="320" alt="공개 합성 영수증" decoding="async"></div>
+        <div class="heatmap-toolbar">
+          <label class="switch"><input id="show-heatmap" type="checkbox" checked><span class="switch-track" aria-hidden="true"></span><span>어텐션</span></label>
+          <details class="map-info"><summary aria-label="어텐션 설명">ⓘ</summary><div><p>모델 내부 어텐션의 상대 강도입니다. 정답의 근거를 보장하지 않습니다.</p><p id="map-description">실행 후 표시됩니다.</p></div></details>
+          <div class="heatmap-legend" aria-label="어텐션 상대 강도"><span>낮음</span><span class="legend-ramp"></span><span>높음</span></div>
+          <label class="opacity-control">농도 <input id="map-opacity" type="range" min="20" max="100" value="85" aria-label="어텐션 표시 농도"></label>
+        </div>
+      </div>
+      <div class="control-panel">
+        <form id="demo-form">
+          <fieldset class="model-picker"><legend class="field-label">모델</legend>
+            <label class="model-choice" title="전화번호 자리 · 주소 숫자"><input type="radio" name="model" value="digit" checked><strong>Digit</strong><span class="model-size" id="digit-size"></span></label>
+            <label class="model-choice" title="상호 · 품목 · 수량 · 금액"><input type="radio" name="model" value="vqa"><strong>VQA</strong><span class="model-size" id="vqa-size"></span></label>
+          </fieldset>
+          <div class="question-head"><label class="field-label" for="question">질문</label><select id="question-preset" aria-label="질문 예시" disabled><option>예시</option></select></div>
+          <textarea id="question" rows="2" maxlength="512" placeholder="질문을 입력하세요." required disabled></textarea>
+          <button class="run-button" id="run" type="submit" disabled><span id="run-label">실행</span><span aria-hidden="true">↗</span></button>
+          <div class="run-status"><span class="status-dot" id="status-dot"></span><p id="status" role="status" aria-live="polite">준비 중</p><button id="cancel" type="button" hidden>중지</button></div>
+        </form>
+        <section class="answer-card" aria-label="모델 답변">
+          <div class="answer-heading"><span class="field-label">답변</span><span id="answer-check" class="answer-check" hidden></span></div>
+          <output id="answer" aria-live="polite">—</output>
+          <div class="metrics"><div><span>추론</span><strong id="inference-time">—</strong></div><div><span>로드</span><strong id="load-time">—</strong></div><div><span>실행</span><strong>WASM · CPU</strong></div></div>
+        </section>
+        <button class="release-button" id="release-memory" type="button" title="1분간 사용하지 않으면 자동으로 해제됩니다." disabled>메모리 해제</button>
+      </div>
+    </section>
+  </main>
+  <footer><a id="release-link" hidden>모델 배포본 ↗</a><a href="samples.json">예제 출처</a><a href="../LICENSE">Apache-2.0</a></footer>
+  <script src="heatmap-view.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
