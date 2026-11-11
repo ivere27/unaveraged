@@ -1,0 +1,26 @@
+{
+  "matches": [
+    "https://smartstore.naver.com/*",
+    "https://shopping.naver.com/*"
+  ],
+  "development_matches": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "file:///*"
+  ],
+  "image_selectors": [
+    "#rcpt_img",
+    "img.captcha_img",
+    "img[alt='Captcha Image']"
+  ],
+  "question_selectors": [
+    "#rcpt_info",
+    ".captcha_message"
+  ],
+  "answer_selectors": [
+    "#rcpt_form input[id^='rcpt_answer_'][name='captcha']",
+    "input[id^='rcpt_answer_'][name='captcha']",
+    "#rcpt_form input[name='captcha']",
+    "input[name='captcha']"
+  ]
+}

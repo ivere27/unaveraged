@@ -1,0 +1,50 @@
+{
+  "id": "vqa",
+  "slug": "unaveraged-vqa",
+  "name": "unaveraged VQA",
+  "version": "0.1.0",
+  "description": "Read supported receipt questions on your device and fill the answer field for review.",
+  "channel": "receipt-vqa/v1",
+  "ui": {
+    "title": "영수증 질문 답변",
+    "record_fields": [],
+    "panel_id": "receipt-vqa-panel"
+  },
+  "model": {
+    "repository": "ivere27/tiny-receipt-vqa-structured-qa-21m",
+    "revision": "f536c6ed181ca88929214f0bbc08f126f148c7ae",
+    "common_files": [
+      "config.json",
+      "manifest.json",
+      "LICENSE",
+      "examples/receipt_en.jpg",
+      "examples/receipt_ko.jpg",
+      "NOTICE",
+      "vocab.json",
+      "byte_bpe.py",
+      "examples/family_examples.json"
+    ],
+    "variants": {
+      "fp32": [
+        "encoder_model.onnx",
+        "decoder_model.onnx"
+      ]
+    },
+    "package_files": [
+      "manifest.json",
+      "config.json",
+      "vocab.json",
+      "encoder/graph.json",
+      "encoder/model.safetensors",
+      "decoder/graph.json",
+      "decoder/model.safetensors"
+    ]
+  },
+  "cache_by_question": true,
+  "examples": "examples/family_examples.json",
+  "scripts": [
+    "adapter.js",
+    "tokenizer.js"
+  ],
+  "default_precision": "w4a8"
+}

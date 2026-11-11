@@ -1,0 +1,120 @@
+unaveraged
+Copyright 2026 unaveraged contributors
+
+Original project code, build tools, tests, documentation and icons are provided
+under Apache License 2.0. See LICENSE. The adapted JavaScript identified below
+retains its MIT license. Each browser package contains only its selected model
+and adapter; third-party licenses remain intact.
+
+1. Tiny Receipt Reader Digit Slots 2M
+   Source: https://huggingface.co/ivere27/tiny-receipt-reader-digit-slots-2m
+   Revision: c9fa07886f99334ea820bfe312d6b4771d9460b0
+   License: Apache-2.0; model/LICENSE.txt in the digit package, downloaded from
+   the pinned public source release.
+   Changes: FP32 ONNX conversion through VolvoxAI. The default
+   conv4-linear2 profile uses joint weight QAT, INT4 convolution weights and
+   INT2/group32 dense weights, followed by static INT8 convolution calibration.
+   Packed dense layers use dynamic INT8 arithmetic; other selected operations
+   remain FP32. The optional W8A8 build calibrates INT8 convolutions. Exact
+   graph/weight hashes and fitting algorithms are recorded in build-info.json
+   and model/manifest.json in each corresponding browser package. Default builds
+   download the public FP32 source, train and calibrate with synthetic receipts
+   000000 through 000223, and reserve 000224 through 000255 for validation.
+   Weight training uses CPU by default, with CUDA available through QAT_BACKEND;
+   convolution calibration uses CPU. Historical evaluated artifact identities
+   and scope remain in digit/frozen-profiles.json and benchmarks/ in source for
+   optional explicit imports. Fresh builds can produce different weights.
+
+2. Tiny unaveraged VQA Structured QA 21M
+   Source: https://huggingface.co/ivere27/tiny-receipt-vqa-structured-qa-21m
+   Revision: f536c6ed181ca88929214f0bbc08f126f148c7ae
+   License: Apache-2.0; original model/LICENSE.txt and model/NOTICE.txt in VQA ZIP,
+   downloaded from the pinned public source release.
+   Changes: FP32 encoder/decoder conversion through VolvoxAI; masked question
+   padding to 192, batch 1, int32 IDs/masks, positive-length masked KV sentinel,
+   SiLU numerical migration and common subexpression elimination. The default
+   W4A8 PTQ profile packs 67 dense layers at INT4/group32 with dynamic INT8
+   activations; 13 convolutions use static INT8. Identical constants and token
+   embeddings share storage. Other selected operations remain FP32. Default builds
+   download the public FP32 source and perform PTQ with all 256 bundled synthetic
+   receipts. Generated graphs, weight shards and manifests are stored in local
+   caches before packaging. Historical evaluated artifact identities remain in
+   vqa/frozen-profiles.json for optional explicit imports; fresh builds can differ.
+
+Model provenance and modifications are recorded in each package's build-info.json
+and model/manifest.json. Private calibration/evaluation images and questions are
+not redistributed with the public source or either browser package. The public
+documentation includes two unchanged synthetic Korean receipt examples from the
+pinned model repositories, together with selected public example questions and
+expected answers. These are not captured user receipts. Their original URLs,
+revisions and SHA256 hashes are listed in docs/assets/examples/sources.json.
+The Apache-2.0 license is in the root LICENSE. The original VQA notice is
+retained below. Documentation examples are not added to the
+extension packages.
+
+The public source also includes synth/: 256 original
+synthetic receipt PNGs and their generated content/glyph-coordinate annotations,
+distributed under this repository's Apache-2.0 license. Their image pixels are
+procedurally rendered; store names, address prefixes and item names come from a
+text bank built from existing receipt annotations. Captured receipt images and
+their original annotation files are not included. Generation uses rendered Noto
+Sans CJK and DejaVu glyphs; no font binaries are distributed in this dataset.
+The dataset manifest records image/annotation hashes and generation provenance.
+Calibration data is included in source exports and excluded from extension packages.
+
+3. VolvoxAI 0.9.0 lite JavaScript/WebAssembly runtime
+   Source: https://github.com/ivere27/volvoxai
+   Distribution: published npm volvoxai-lite@0.9.0.
+   Exact source and binary hashes are recorded in build-info.json.
+   Copyright (c) 2026 VolvoxAI Contributors
+   License: MIT; full text below and vendor/LICENSE.txt in each extension. The selected runtime files are included without modification.
+
+4. Adapted model-specific JavaScript
+   digit/adapter.js question routing: VolvoxAI
+   examples/receipt_digit_reader/questionRouter.js.
+   vqa/tokenizer.js: VolvoxAI
+   examples/tiny_receipt_vqa/TinyReceiptByteFallbackBPEVocab.js.
+   Copyright (c) 2026 VolvoxAI Contributors
+   License: MIT; full text below, included in NOTICE.txt in each ZIP.
+   These components retain their MIT license and attribution.
+
+Build/test dependencies retain their own licenses and are installed separately
+through npm and PyPI. Versions are recorded in package-lock.json and requirements.txt.
+ONNX Runtime is only the independent validation reference, not the PTQ engine or
+extension runtime. Build/test dependency trees are not redistributed.
+
+NAVER and Chrome are trademarks of their respective owners. These independent
+extensions are not affiliated with or endorsed by NAVER or Google.
+
+Original VQA attribution notice
+-------------------------------
+
+TinyReceiptVQA Structured QA
+Copyright 2026 ivere27
+
+This model package is distributed under the Apache License, Version 2.0.
+
+VolvoxAI MIT license (runtime and adapted JavaScript above)
+----------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 VolvoxAI Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

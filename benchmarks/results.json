@@ -1,0 +1,942 @@
+{
+  "format": "unaveraged-default-model-benchmarks/v1",
+  "updated": "2026-10-27",
+  "aggregate_only": true,
+  "environment": {
+    "digit_accuracy": {
+      "python": "3.10.12",
+      "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+      "cpu": "AMD Ryzen 5 5600U with Radeon Graphics"
+    },
+    "digit_latency": {
+      "native": {
+        "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+        "logical_cpus": 4,
+        "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "numpy": "2.2.6",
+        "host_observations": [
+          {
+            "phase": "before",
+            "timestamp": "2026-10-27T06:02:06.596454+00:00",
+            "loadavg": [
+              0.1982421875,
+              0.09814453125,
+              0.03369140625
+            ]
+          },
+          {
+            "phase": "after",
+            "timestamp": "2026-10-27T06:02:27.853666+00:00",
+            "loadavg": [
+              0.4267578125,
+              0.15771484375,
+              0.05517578125
+            ]
+          }
+        ]
+      },
+      "chrome": {
+        "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+        "logical_cpus": 4,
+        "platform": "Linux 6.8.0-138-generic x64",
+        "node": "v24.19.0",
+        "host_observations": [
+          {
+            "phase": "before",
+            "timestamp": "2026-10-27T06:02:53.106Z",
+            "loadavg": [
+              0.28,
+              0.14,
+              0.05
+            ]
+          },
+          {
+            "phase": "after",
+            "timestamp": "2026-10-27T06:04:07.170Z",
+            "loadavg": [
+              0.8,
+              0.34,
+              0.13
+            ]
+          }
+        ],
+        "browser": "Chrome/150.0.7871.24"
+      }
+    },
+    "scope": "Digit accuracy uses Ryzen 5 5600U; Digit latency uses i3-1115G4; VQA latency uses Ryzen 5 5600U. Compare speed within each measured host and protocol.",
+    "vqa_latency": {
+      "cpu": "AMD Ryzen 5 5600U with Radeon Graphics",
+      "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+      "python": "3.10.12",
+      "chrome": "150.0.7871.24",
+      "wasm_cpu_threads": 1,
+      "batch_size": 1,
+      "host_idle_claimed": false,
+      "node": "v24.19.0",
+      "firefox": "firefox/158.0.1"
+    }
+  },
+  "runtime": {
+    "native": {
+      "package": "volvoxai",
+      "version": "0.9.0",
+      "source": "pypi",
+      "sha256": {
+        "libvolvoxai.so": "3dcd7236d71bff5236e60a3e2c8e665e95ad2ee59471641cdea37da72543695d",
+        "libsynurang_module_host.so": "a41b36a8ec25847d0dbd23dc9cd8da72d1c1245b7780277897484c35264b3cfb"
+      },
+      "wheel": "volvoxai-0.9.0-cp310-abi3-manylinux_2_28_x86_64.whl",
+      "wheel_sha256": "47b1e1a720d4938bafc152f0d87af907057afc7ae8ba9909606ead3b24a30a5d",
+      "url": "https://files.pythonhosted.org/packages/4d/c6/e398c121a68478bb32944383c04bfec10494a25bafc701a6a0fd167553fa/volvoxai-0.9.0-cp310-abi3-manylinux_2_28_x86_64.whl"
+    },
+    "wasm": {
+      "package": "volvoxai-lite",
+      "version": "0.9.0",
+      "source": "published-npm",
+      "sha256": {
+        "volvoxai.lite.min.js": "b228f0014189e85f8ec4070ad98ea64eae3c0e9905101ddfe55d4aa3632f5ac2",
+        "volvoxai.lite.wasm": "b4b290aa55feb16c2f45a2158438dc342b6a8e42ce5abc9c3648d4b56b3c50f1"
+      },
+      "tarball_sha256": "4571e36a5be180341ac3d7a1739826c8c35514572a66ab9eaee442f52d574de0",
+      "integrity": "sha512-zxQNkaYB69mZ6KvMA5iKmBD+6UgF6pzX21qIzoZ7zCyxsKqRVe/GiYs6gj+pO+v1zgQ27hHxsps4VHMLxyLB4g==",
+      "url": "https://registry.npmjs.org/volvoxai-lite/-/volvoxai-lite-0.9.0.tgz"
+    },
+    "default_dependency": {
+      "version": "0.9.0",
+      "source": "published"
+    }
+  },
+  "models": {
+    "digit": {
+      "name": "Digit conv4-linear2 QAT",
+      "identity": {
+        "profile": "conv4-linear2",
+        "training": "joint-CUDA weight-only QAT, selected epoch 2; final CPU A8 calibration",
+        "sha256": {
+          "graph.json": "2ebaf4611059b396a7fddc3ddea4c8be5dc0993a6065ef65de593e7896ce1d24",
+          "model.safetensors": "50d5e4e07abe5b87204f20fe5f3f7b5e9f40c15a10abcd23a185ea1890b9748c"
+        },
+        "graph_weight_bytes": 1726081,
+        "graph_weight_mib": 1.6461191177368164,
+        "packed_arithmetic": "dynamic-i8",
+        "conv_weight_bits": 4,
+        "linear_weight_bits": 2,
+        "linear_group_size": 32,
+        "activation_policy": "Static INT8 convolution activations; dynamic INT8 packed linear activations; other operators remain FP32.",
+        "selected_epoch": 2
+      },
+      "accuracy": {
+        "date": "2026-10-28",
+        "method": "complete_phone_street_record",
+        "correct": 1913,
+        "samples": 2000,
+        "percent": 95.65,
+        "backend": "native-cpu",
+        "cpu_threads": 1,
+        "runtime_version": "0.9.0",
+        "runtime_source": "pypi",
+        "candidate_runtime_reevaluated": true,
+        "independent": false,
+        "scope": "All 2000 supplied heldout records, previously used for development/evaluation; annotations not fully human-audited.",
+        "question_answer_correct": 1968,
+        "question_answer_percent": 98.4,
+        "chrome": {
+          "record_correct": 1913,
+          "phone_correct": 1964,
+          "street_correct": 1937,
+          "answer_correct": 1968,
+          "samples": 2000,
+          "record_percent": 95.65,
+          "answer_percent": 98.4
+        }
+      },
+      "comparators": [
+        {
+          "profile": "f32",
+          "name": "FP32",
+          "graph_weight_bytes": 9949321,
+          "sha256": {
+            "graph.json": "09268ab13dba6b615a04e9891b186497ea09acbe89a4f263aed3ebcd85231071",
+            "model.safetensors": "1aebb58a94fe40abfb8ecde5ff2128254438e1c987b4ac7b60a3522cf6ed1b27"
+          },
+          "accuracy": {
+            "date": "2026-10-27",
+            "method": "complete_phone_street_record",
+            "correct": 1938,
+            "samples": 2000,
+            "percent": 96.9,
+            "backend": "native-cpu",
+            "cpu_threads": 1,
+            "runtime_version": "0.9.0",
+            "runtime_source": "pypi",
+            "candidate_runtime_reevaluated": true,
+            "independent": false,
+            "scope": "All 2000 supplied heldout records, previously used for development/evaluation; annotations not fully human-audited.",
+            "question_answer_correct": 1975,
+            "question_answer_percent": 98.75,
+            "chrome": {
+              "record_correct": 1938,
+              "phone_correct": 1988,
+              "street_correct": 1950,
+              "answer_correct": 1975,
+              "samples": 2000,
+              "record_percent": 96.9,
+              "answer_percent": 98.75
+            }
+          },
+          "latency": {
+            "date": "2026-10-27",
+            "runtime_version": "0.9.0",
+            "environment": {
+              "native": {
+                "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+                "logical_cpus": 4,
+                "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+                "python": "3.10.12",
+                "numpy": "2.2.6",
+                "host_observations": [
+                  {
+                    "phase": "before",
+                    "timestamp": "2026-10-27T06:02:06.596454+00:00",
+                    "loadavg": [
+                      0.1982421875,
+                      0.09814453125,
+                      0.03369140625
+                    ]
+                  },
+                  {
+                    "phase": "after",
+                    "timestamp": "2026-10-27T06:02:27.853666+00:00",
+                    "loadavg": [
+                      0.4267578125,
+                      0.15771484375,
+                      0.05517578125
+                    ]
+                  }
+                ]
+              },
+              "chrome": {
+                "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+                "logical_cpus": 4,
+                "platform": "Linux 6.8.0-138-generic x64",
+                "node": "v24.19.0",
+                "host_observations": [
+                  {
+                    "phase": "before",
+                    "timestamp": "2026-10-27T06:02:53.106Z",
+                    "loadavg": [
+                      0.28,
+                      0.14,
+                      0.05
+                    ]
+                  },
+                  {
+                    "phase": "after",
+                    "timestamp": "2026-10-27T06:04:07.170Z",
+                    "loadavg": [
+                      0.8,
+                      0.34,
+                      0.13
+                    ]
+                  }
+                ],
+                "browser": "Chrome/150.0.7871.24"
+              }
+            },
+            "warm": {
+              "native_cpu_1t": {
+                "cpu_threads": 1,
+                "samples": 45,
+                "median_ms": 33.794236,
+                "mean_ms": 33.84408542222222,
+                "p95_ms": 34.1868754
+              },
+              "chrome_wasm": {
+                "cpu_threads": 1,
+                "execution_context": "Dedicated module worker",
+                "samples": 45,
+                "median_ms": 166.09999990463257,
+                "mean_ms": 166.44444443384808,
+                "p95_ms": 168.86000003814698
+              }
+            },
+            "protocol": {
+              "native": {
+                "cycles": 15,
+                "warmups_per_input": 4,
+                "initial_reference_executions_per_input": 1,
+                "input_count": 3,
+                "samples_per_model": 45,
+                "batch_size": 1,
+                "cpu_threads": 1,
+                "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+                "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+                "host_idle_claimed": false,
+                "timer_includes": [
+                  "InferenceSession.run, input/output transport and owned output arrays"
+                ],
+                "timer_excludes": [
+                  "input reads",
+                  "hashing",
+                  "preprocessing",
+                  "loading/compilation",
+                  "warmups",
+                  "numerical validation"
+                ],
+                "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+                "source_input_indices": [
+                  0,
+                  999,
+                  1999
+                ],
+                "input_sha256": [
+                  "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+                  "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+                  "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+                ],
+                "status": "passed",
+                "tolerance": {
+                  "rtol": 0.0005,
+                  "atol": 0.001
+                }
+              },
+              "chrome": {
+                "cycles": 15,
+                "warmups_per_input": 4,
+                "initial_reference_executions_per_input": 1,
+                "input_count": 3,
+                "samples_per_model": 45,
+                "batch_size": 1,
+                "cpu_threads": 1,
+                "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+                "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+                "host_idle_claimed": false,
+                "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+                "source_input_indices": [
+                  0,
+                  999,
+                  1999
+                ],
+                "input_sha256": [
+                  "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+                  "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+                  "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+                ],
+                "status": "passed",
+                "tolerance": {
+                  "rtol": 0.0005,
+                  "atol": 0.001
+                },
+                "browser": "Chrome/150.0.7871.24",
+                "execution_context": "Chrome dedicated module worker",
+                "timer_includes": [
+                  "execute dispatch, input/output transport and copied inline output"
+                ],
+                "timer_excludes": [
+                  "preprocessing",
+                  "model verification",
+                  "load",
+                  "compile",
+                  "context creation",
+                  "numerical validation",
+                  "UI",
+                  "extension queue"
+                ]
+              }
+            },
+            "scope": "Interleaved fixed-input comparison on one Intel i3-1115G4 host; 3 heldout inputs, 15 cycles, 45 executions per model. Full 2000-record accuracy-pass timing is auxiliary in digit-comparison.json."
+          }
+        },
+        {
+          "profile": "w8a8",
+          "name": "W8A8",
+          "graph_weight_bytes": 4132316,
+          "sha256": {
+            "graph.json": "8e89b05bae252847ba66e4a654f3b0bec4f25f0c5d444e86dedefa752e026c2a",
+            "model.safetensors": "4e3f0fc5777d536312573f885ece77865574aba751f82a574b14c14c50218b7b"
+          },
+          "accuracy": {
+            "date": "2026-10-27",
+            "method": "complete_phone_street_record",
+            "correct": 1936,
+            "samples": 2000,
+            "percent": 96.8,
+            "backend": "native-cpu",
+            "cpu_threads": 1,
+            "runtime_version": "0.9.0",
+            "runtime_source": "pypi",
+            "candidate_runtime_reevaluated": true,
+            "independent": false,
+            "scope": "All 2000 supplied heldout records, previously used for development/evaluation; annotations not fully human-audited.",
+            "question_answer_correct": 1976,
+            "question_answer_percent": 98.8,
+            "chrome": {
+              "record_correct": 1936,
+              "phone_correct": 1986,
+              "street_correct": 1950,
+              "answer_correct": 1976,
+              "samples": 2000,
+              "record_percent": 96.8,
+              "answer_percent": 98.8
+            }
+          },
+          "latency": {
+            "date": "2026-10-27",
+            "runtime_version": "0.9.0",
+            "environment": {
+              "native": {
+                "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+                "logical_cpus": 4,
+                "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+                "python": "3.10.12",
+                "numpy": "2.2.6",
+                "host_observations": [
+                  {
+                    "phase": "before",
+                    "timestamp": "2026-10-27T06:02:06.596454+00:00",
+                    "loadavg": [
+                      0.1982421875,
+                      0.09814453125,
+                      0.03369140625
+                    ]
+                  },
+                  {
+                    "phase": "after",
+                    "timestamp": "2026-10-27T06:02:27.853666+00:00",
+                    "loadavg": [
+                      0.4267578125,
+                      0.15771484375,
+                      0.05517578125
+                    ]
+                  }
+                ]
+              },
+              "chrome": {
+                "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+                "logical_cpus": 4,
+                "platform": "Linux 6.8.0-138-generic x64",
+                "node": "v24.19.0",
+                "host_observations": [
+                  {
+                    "phase": "before",
+                    "timestamp": "2026-10-27T06:02:53.106Z",
+                    "loadavg": [
+                      0.28,
+                      0.14,
+                      0.05
+                    ]
+                  },
+                  {
+                    "phase": "after",
+                    "timestamp": "2026-10-27T06:04:07.170Z",
+                    "loadavg": [
+                      0.8,
+                      0.34,
+                      0.13
+                    ]
+                  }
+                ],
+                "browser": "Chrome/150.0.7871.24"
+              }
+            },
+            "warm": {
+              "native_cpu_1t": {
+                "cpu_threads": 1,
+                "samples": 45,
+                "median_ms": 21.849448,
+                "mean_ms": 21.832480333333333,
+                "p95_ms": 22.0759288
+              },
+              "chrome_wasm": {
+                "cpu_threads": 1,
+                "execution_context": "Dedicated module worker",
+                "samples": 45,
+                "median_ms": 80.80000019073486,
+                "mean_ms": 81.25333338843451,
+                "p95_ms": 82.78000020980835
+              }
+            },
+            "protocol": {
+              "native": {
+                "cycles": 15,
+                "warmups_per_input": 4,
+                "initial_reference_executions_per_input": 1,
+                "input_count": 3,
+                "samples_per_model": 45,
+                "batch_size": 1,
+                "cpu_threads": 1,
+                "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+                "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+                "host_idle_claimed": false,
+                "timer_includes": [
+                  "InferenceSession.run, input/output transport and owned output arrays"
+                ],
+                "timer_excludes": [
+                  "input reads",
+                  "hashing",
+                  "preprocessing",
+                  "loading/compilation",
+                  "warmups",
+                  "numerical validation"
+                ],
+                "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+                "source_input_indices": [
+                  0,
+                  999,
+                  1999
+                ],
+                "input_sha256": [
+                  "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+                  "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+                  "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+                ],
+                "status": "passed",
+                "tolerance": {
+                  "rtol": 0.0005,
+                  "atol": 0.001
+                }
+              },
+              "chrome": {
+                "cycles": 15,
+                "warmups_per_input": 4,
+                "initial_reference_executions_per_input": 1,
+                "input_count": 3,
+                "samples_per_model": 45,
+                "batch_size": 1,
+                "cpu_threads": 1,
+                "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+                "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+                "host_idle_claimed": false,
+                "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+                "source_input_indices": [
+                  0,
+                  999,
+                  1999
+                ],
+                "input_sha256": [
+                  "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+                  "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+                  "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+                ],
+                "status": "passed",
+                "tolerance": {
+                  "rtol": 0.0005,
+                  "atol": 0.001
+                },
+                "browser": "Chrome/150.0.7871.24",
+                "execution_context": "Chrome dedicated module worker",
+                "timer_includes": [
+                  "execute dispatch, input/output transport and copied inline output"
+                ],
+                "timer_excludes": [
+                  "preprocessing",
+                  "model verification",
+                  "load",
+                  "compile",
+                  "context creation",
+                  "numerical validation",
+                  "UI",
+                  "extension queue"
+                ]
+              }
+            },
+            "scope": "Interleaved fixed-input comparison on one Intel i3-1115G4 host; 3 heldout inputs, 15 cycles, 45 executions per model. Full 2000-record accuracy-pass timing is auxiliary in digit-comparison.json."
+          }
+        }
+      ],
+      "selection_reason": "Frozen epoch-2 joint QAT size-priority selection: 1.646 MiB, 58.2% smaller than W8A8, with 29/2000 fewer complete records (1.45 percentage points). Current Chrome medians on the same i3-1115G4 host are 88.20 ms versus 80.80 ms for W8A8. Conv3/Linear3 QAT is smaller at 1.461 MiB, with 93.50% complete-record accuracy. All 13 frozen alternatives are compared without retraining or choosing a new default from heldout results.",
+      "latency": {
+        "date": "2026-10-27",
+        "runtime_version": "0.9.0",
+        "environment": {
+          "native": {
+            "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+            "logical_cpus": 4,
+            "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+            "python": "3.10.12",
+            "numpy": "2.2.6",
+            "host_observations": [
+              {
+                "phase": "before",
+                "timestamp": "2026-10-27T06:02:06.596454+00:00",
+                "loadavg": [
+                  0.1982421875,
+                  0.09814453125,
+                  0.03369140625
+                ]
+              },
+              {
+                "phase": "after",
+                "timestamp": "2026-10-27T06:02:27.853666+00:00",
+                "loadavg": [
+                  0.4267578125,
+                  0.15771484375,
+                  0.05517578125
+                ]
+              }
+            ]
+          },
+          "chrome": {
+            "cpu": "11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz",
+            "logical_cpus": 4,
+            "platform": "Linux 6.8.0-138-generic x64",
+            "node": "v24.19.0",
+            "host_observations": [
+              {
+                "phase": "before",
+                "timestamp": "2026-10-27T06:02:53.106Z",
+                "loadavg": [
+                  0.28,
+                  0.14,
+                  0.05
+                ]
+              },
+              {
+                "phase": "after",
+                "timestamp": "2026-10-27T06:04:07.170Z",
+                "loadavg": [
+                  0.8,
+                  0.34,
+                  0.13
+                ]
+              }
+            ],
+            "browser": "Chrome/150.0.7871.24"
+          }
+        },
+        "warm": {
+          "native_cpu_1t": {
+            "cpu_threads": 1,
+            "samples": 45,
+            "median_ms": 27.103447,
+            "mean_ms": 27.1741368,
+            "p95_ms": 27.4313216
+          },
+          "chrome_wasm": {
+            "cpu_threads": 1,
+            "execution_context": "Dedicated module worker",
+            "samples": 45,
+            "median_ms": 88.2000002861023,
+            "mean_ms": 88.49777782228259,
+            "p95_ms": 90.68000020980834
+          }
+        },
+        "protocol": {
+          "native": {
+            "cycles": 15,
+            "warmups_per_input": 4,
+            "initial_reference_executions_per_input": 1,
+            "input_count": 3,
+            "samples_per_model": 45,
+            "batch_size": 1,
+            "cpu_threads": 1,
+            "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+            "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+            "host_idle_claimed": false,
+            "timer_includes": [
+              "InferenceSession.run, input/output transport and owned output arrays"
+            ],
+            "timer_excludes": [
+              "input reads",
+              "hashing",
+              "preprocessing",
+              "loading/compilation",
+              "warmups",
+              "numerical validation"
+            ],
+            "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+            "source_input_indices": [
+              0,
+              999,
+              1999
+            ],
+            "input_sha256": [
+              "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+              "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+              "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+            ],
+            "status": "passed",
+            "tolerance": {
+              "rtol": 0.0005,
+              "atol": 0.001
+            }
+          },
+          "chrome": {
+            "cycles": 15,
+            "warmups_per_input": 4,
+            "initial_reference_executions_per_input": 1,
+            "input_count": 3,
+            "samples_per_model": 45,
+            "batch_size": 1,
+            "cpu_threads": 1,
+            "order": "Alternate forward/reverse model order each cycle, for each fixed input",
+            "input_selection": "Fixed ordered positions 0,999,1999; no label/accuracy-based selection",
+            "host_idle_claimed": false,
+            "timing_scope": "Interleaved repeated model timings; separate from full-corpus accuracy and sequential evaluation-pass latency",
+            "source_input_indices": [
+              0,
+              999,
+              1999
+            ],
+            "input_sha256": [
+              "68437169b7391da9b2f010464a9d4b94dd7852a3266e7f576344d8198f5eabf0",
+              "00e632349cf86f4ac25e0374d4abb9a49865458a31f261540ffb1d0c7db40c32",
+              "a31d50c275adb730d6d91a908b468e74af51471c528766dd1d9489074ecc7b55"
+            ],
+            "status": "passed",
+            "tolerance": {
+              "rtol": 0.0005,
+              "atol": 0.001
+            },
+            "browser": "Chrome/150.0.7871.24",
+            "execution_context": "Chrome dedicated module worker",
+            "timer_includes": [
+              "execute dispatch, input/output transport and copied inline output"
+            ],
+            "timer_excludes": [
+              "preprocessing",
+              "model verification",
+              "load",
+              "compile",
+              "context creation",
+              "numerical validation",
+              "UI",
+              "extension queue"
+            ]
+          }
+        },
+        "scope": "Interleaved fixed-input comparison on one Intel i3-1115G4 host; 3 heldout inputs, 15 cycles, 45 executions per model. Full 2000-record accuracy-pass timing is auxiliary in digit-comparison.json."
+      },
+      "validation": {
+        "full_corpus": {
+          "slot_mismatches": 0,
+          "numerical_mismatches": 118,
+          "byte_mismatches": 2000,
+          "maximum_absolute_logit_difference": 0.13301706314086914
+        },
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.0005
+        },
+        "input_count": 2000,
+        "latency_validation": {
+          "native": {
+            "native_reference_bytes_equal": true,
+            "native_reference_slots_equal": true,
+            "native_reference_logits_within_tolerance": true,
+            "maximum_absolute_logit_difference": 0.0
+          },
+          "chrome": {
+            "native_reference_slots_equal": true,
+            "native_reference_logits_within_tolerance": true,
+            "maximum_absolute_logit_difference": 6.67572021484375e-06
+          }
+        },
+        "status": {
+          "native": "passed",
+          "chrome": "completed-with-numerical-differences"
+        },
+        "scope": "Full native/Chrome accuracy and slot/logit comparison on the accuracy host; separate 3-input validation on the latency host."
+      },
+      "comparison_file": "digit-comparison.json"
+    },
+    "vqa": {
+      "name": "VQA W4A8 PTQ",
+      "identity": {
+        "profile": "w4a8",
+        "method": "post-training quantization",
+        "sha256": {
+          "config.json": "e18e266da200b9b915628c1b8f633cb523520287e2d8f75c8093e3f4d6575f7e",
+          "vocab.json": "ae19bf56556649d75e72450ff6c7d43895190404c15dffeb6412dce5cc4d2c80",
+          "encoder/graph.json": "c9f1a40e5d0a4d057b03fcb0ee3c65b062768a1991e8b86d674a192bcd20a1c1",
+          "encoder/model.safetensors": "3b91f0f688d23397d14cd506a9faafc1b3e85a68ac12aaac2bcddd49bdfa7757",
+          "decoder/graph.json": "ae02afd8c84c2927068dbe4a8ef0a77bcec646b3274d6f83b6df6f02e19f2825",
+          "decoder/model.safetensors": "5cfd2a08db56605f8ff1aa23ef7786f83e1415e28d57a2ec542e1a0f6de1312c",
+          "shared/token-embedding.safetensors": "2ddc31c77c47498d65ee5604f5ee202704aa32a4878b10cf1c171618306a4a60"
+        },
+        "source_manifest_sha256": "ad4f2576b6401144bf467693e82d12d3ce9db7dc7cbe3d7a7c1e4e57c1f0e3db",
+        "package_bytes": 21617105,
+        "package_size_scope": "Deployable graphs, weights, shared embedding counted once, vocabulary, config and benchmark manifest; excludes runtime and ZIP. Release wrapper metadata size may differ.",
+        "linear_layers": 67,
+        "linear_weight_bits": 4,
+        "linear_group_size": 32,
+        "convolution_layers": 13,
+        "conv_weight_bits": 8,
+        "packed_arithmetic": "dynamic-i8",
+        "activation_policy": "Dynamic INT8 dense activations; static INT8 convolution activations; embeddings, normalization and attention retain FP32."
+      },
+      "reference_w8a8": {
+        "profile": "w8a8",
+        "package_bytes": 27337570,
+        "comparison_scope": "Existing W8A8 has a different static activation recipe and calibration. This comparison does not isolate weight bit width or prove a kernel-level cause."
+      },
+      "comparators": [
+        {
+          "profile": "w8a8",
+          "name": "W8A8",
+          "package_bytes": 27337570,
+          "sha256": {
+            "configuration": "e18e266da200b9b915628c1b8f633cb523520287e2d8f75c8093e3f4d6575f7e",
+            "decoder_graph": "2b1e0a54b16dbb57ae9315f66b7212e3e986435c4a080922807e5cb0e4d375c7",
+            "decoder_weights": "a19a2ef115053174b7e927f76d709cb0a66e2eb8ed0ce3340624d14d12ba1726",
+            "encoder_graph": "28fb62de5eee6865fdb30ae362ae3fd466be5e42d0af749b72e5896c5af70727",
+            "encoder_weights": "150a513e1f1f30689d5d9bf932c4d4675bca32d4c7f5531bc2f23fd4485117c1",
+            "manifest": "1e3931519b47d6a36ea31018561d4e2a8eee8da0ec360bbaf09cdb51c661f5f3",
+            "shared_token_embedding": "8b9c2ffa44618dae2bc8169ceb6409cf99bee4145f336999e70a5913b4600e6d",
+            "vocabulary": "ae19bf56556649d75e72450ff6c7d43895190404c15dffeb6412dce5cc4d2c80"
+          }
+        }
+      ],
+      "selection_reason": "20.9% smaller than W8A8. VolvoxAI 0.9.0 Chrome answer medians are 823.9 ms for W4A8 and 894.5 ms for W8A8 on the same three public questions.",
+      "latency": {
+        "date": "2026-10-27",
+        "w4a8": {
+          "complete_answer_median_ms": 823.8999999761581,
+          "encoder_median_ms": 618.8000000119209,
+          "greedy_decoder_median_ms": 203.59999990463257,
+          "fixed_prefix_decoder_median_ms_per_token": 12.474999997764826,
+          "samples": 15
+        },
+        "reference_w8a8": {
+          "complete_answer_median_ms": 894.5,
+          "encoder_median_ms": 542.6999999880791,
+          "greedy_decoder_median_ms": 348.89999997615814,
+          "fixed_prefix_decoder_median_ms_per_token": 21.493750002235174,
+          "samples": 15
+        },
+        "protocol": {
+          "batch_size": 1,
+          "input_count": 3,
+          "input_source": "Three public questions (phone, address, store) on one English receipt; preprocessed 320x672 grayscale",
+          "input_sha256": [
+            "88ecddb4769b6bf6a3b3ec575eebdf1ee2207d0d36915afcab398ff037af5d95",
+            "88ecddb4769b6bf6a3b3ec575eebdf1ee2207d0d36915afcab398ff037af5d95",
+            "88ecddb4769b6bf6a3b3ec575eebdf1ee2207d0d36915afcab398ff037af5d95"
+          ],
+          "warmups_per_input": 1,
+          "cycles": 5,
+          "samples_per_model": 15,
+          "fixed_prefix_decoder_steps": 16,
+          "ordering": "Alternate forward/reverse model order each measured cycle",
+          "execution_context": "Real Chrome dedicated module worker",
+          "host_idle_claimed": false
+        },
+        "timer_includes": [
+          "execute dispatch",
+          "input/output transport",
+          "copied selected outputs",
+          "tokenization/argmax/parsing in total generation time"
+        ],
+        "timer_excludes": [
+          "image preprocessing",
+          "model verification/load/compile",
+          "warmups",
+          "UI",
+          "extension queue"
+        ],
+        "interpretation": "Stage medians are pooled independently and need not sum to the complete-answer median. Greedy output length varies; fixed-prefix timing holds 16 tokens and cache lengths constant.",
+        "environment": {
+          "cpu": "AMD Ryzen 5 5600U with Radeon Graphics",
+          "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+          "python": "3.10.12",
+          "chrome": "150.0.7871.24",
+          "wasm_cpu_threads": 1,
+          "batch_size": 1,
+          "host_idle_claimed": false,
+          "node": "v24.19.0",
+          "firefox": "firefox/158.0.1"
+        },
+        "runtime_version": "0.9.0",
+        "runtime_sha256": {
+          "volvoxai.lite.min.js": "75a5611d873b25c4997523d8fb527f33dde4da882efd64f11bcdd2a0eb38be6b",
+          "volvoxai.lite.wasm": "5fc82164fba4fa368b7c6ded2c02f1f0fa030ac15c8b6fc36ee1798e0e8529d6"
+        }
+      },
+      "validation": {
+        "timed_w4a8_public_questions_valid": 3,
+        "timed_w4a8_public_questions_total": 3,
+        "repeated_encoder_outputs_bit_exact": true
+      },
+      "accuracy_status": "Full-heldout accuracy evaluated on 0.9.0 (97.15%, 1943/2000)."
+    }
+  },
+  "interpretation": [
+    "Digit reports exact complete phone/street records and the answer requested by each question, both evaluated on 2000 inputs with VolvoxAI 0.9.0.",
+    "All 13 Digit graph/weight artifacts are unchanged. Current package runtime version and original model-exporter provenance are recorded separately.",
+    "Native and Chrome decoded outputs match for all Digit inputs. Numerical logit tolerance differences remain recorded per model.",
+    "Primary Digit latency uses three fixed heldout inputs and interleaved model order on one i3-1115G4. Full-corpus accuracy-pass timing is auxiliary.",
+    "VQA reports 0.9.0 latency over three public questions; full-heldout 0.9.0 accuracy is 97.15% (1,943/2,000).",
+    "Warm timings exclude image preprocessing, model loading and extension UI/queue overhead.",
+    "The heldout set has 1986 distinct image contents across 2000 records and prior development/evaluation use."
+  ],
+  "evidence": {
+    "consolidation": "Only frozen final model choices, relevant controls, current runtime measurements and selection rationale retained; historical optimization logs removed. Private records excluded.",
+    "current_reports_sha256": {
+      "vqa_chrome": "915afeae3f022fb271b578cc68ac62bc2c87478913c7d537cfd092fc6e7414d2"
+    },
+    "vqa_sources_sha256": {
+      "benchmarks/vqa_wasm.mjs": "fd3f0c24490f4b82953f082deeb310385e031b2bda4feddf0666391870665b30",
+      "benchmarks/vqa-wasm-worker.js": "3e9d569a6842c9539572245e9217ee3ebab12bbdfbd4ea40ebd976e473ecbb3d",
+      "vqa/adapter.js": "ca421c4efcf8e22b876dd1c5bae8130d0fcce0a0c719cac55858ce6d421e3133",
+      "vqa/tokenizer.js": "c2c72e977d786674fda4aa4008719fd10dcccd7779ad56af0324f409c88b9ce5"
+    },
+    "vqa_fixture_sha256": "0f10332fe8adf7cae0303ee5cdc229e77b14fdc6cd2d4b423d344b6e08af57c4",
+    "digit_comparison_sha256": "b4ca90e83f29fae05d233a1f480f861fadb2443fe8bc636b36cfd77e91bc059e",
+    "digit_comparison_file": "digit-comparison.json",
+    "vqa_sources_scope": "Hashes identify the code used for the recorded 0.9.0 measurements."
+  },
+  "qualification": {
+    "status": "completed-with-numerical-differences",
+    "scope": "VolvoxAI 0.9.0 Digit native/Chrome evaluation of 13 models on 2000 records plus CPU/Chrome latency. Numerical tolerance differences are preserved.",
+    "digit_full_corpus_accuracy_reevaluated": true,
+    "vqa_full_corpus_accuracy_reevaluated": true,
+    "runtime_parity_passed": false,
+    "cuda_tested": true,
+    "artifact_exporter_version": "0.8.0",
+    "comparison_file": "digit-comparison.json",
+    "integration_validation": {
+      "runtime_version": "0.9.0",
+      "javascript": {
+        "passed": 36,
+        "total": 36
+      },
+      "python": {
+        "passed": 118,
+        "total": 118
+      },
+      "models": {
+        "digit": {
+          "browser_questions": {
+            "correct": 8,
+            "total": 8
+          },
+          "native_questions": {
+            "correct": 8,
+            "total": 8
+          },
+          "lifecycle_checks": 6,
+          "browser_report_sha256": "9aee7e73a4d77ec5c3ce99a94a148489d722d324a0be05149feeeca1312e3ba1",
+          "native_report_sha256": "20bb9e2d03a60f84b5920af1e45511db85b3c6c835f6eb68843ab15403137466",
+          "lifecycle_report_sha256": "2ae462978ff767b65949a59119b47b67b013a8b249d87e2646bd07420ee53529",
+          "build_info_sha256": "0864968988d39de9eb08b6dd5d6b79ff6df8f88a90ee7e5d74c250b3bd1720a0"
+        },
+        "vqa": {
+          "browser_questions": {
+            "correct": 16,
+            "total": 16
+          },
+          "native_questions": {
+            "correct": 16,
+            "total": 16
+          },
+          "lifecycle_checks": 6,
+          "browser_report_sha256": "6d744b87cffff828db803c7cceb4b88f337a5c14a99ba593f1f9cdd294a7a7a0",
+          "native_report_sha256": "66ecdde0d1fa1e2421be5e44053b86b41368d4e089f131ccb2304762ac692e4f",
+          "lifecycle_report_sha256": "a0d0fc2d97ac9a819c0b28f9128eead5112ad4702a21b7465352c8c3cc7b1270",
+          "build_info_sha256": "f3f4085b2fc25d5cd15b166f0fc324a8aaa73e5e14e02632030d9c086758cdac"
+        }
+      }
+    }
+  }
+}
