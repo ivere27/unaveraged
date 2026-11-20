@@ -4,6 +4,7 @@ from contextlib import redirect_stdout
 import io
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -559,6 +560,511 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 release.publish('upload', assets, 'v0.5.0', root=self.root)
             self.assertEqual([call.args[0][2] for call in run.call_args_list if call.args[0][0]=='gh'], ['upload'])
+
+
+class CiReleaseTests(ReleaseTests):
+    def setUp(self):
+        super().setUp()
+        self.ext_version = '0.1.0'
+        self.set_project_versions(self.ext_version)
+
+    def set_project_versions(self, version, *, rebuild_archives=False):
+        self.ext_version = version
+        pkg = json.loads((self.root / 'package.json').read_text())
+        pkg['name'] = 'unaveraged'
+        pkg['version'] = version
+        write(self.root / 'package.json', encoded(pkg))
+        lock = json.loads((self.root / 'package-lock.json').read_text())
+        lock['name'] = 'unaveraged'
+        lock['version'] = version
+        lock.setdefault('packages', {}).setdefault('', {})['version'] = version
+        write(self.root / 'package-lock.json', encoded(lock))
+        for project in ('digit', 'vqa'):
+            config = json.loads((self.root / project / 'extension.json').read_text())
+            config['version'] = version
+            write(self.root / project / 'extension.json', encoded(config))
+            if rebuild_archives:
+                for browser in ('chrome', 'firefox'):
+                    entries = deepcopy(self.contents[project if browser == 'chrome' else f'{project}-firefox'])
+                    self.mutate_json(entries, 'build-info.json', lambda d: d.update(extension_version=version))
+                    manifest = json.loads(entries['manifest.json'])
+                    manifest['version'] = version
+                    entries['manifest.json'] = encoded(manifest)
+                    self.contents[project if browser == 'chrome' else f'{project}-firefox'] = entries
+                    self.replace_archive(project if browser == 'chrome' else f'{project}-firefox', entries)
+
+    def make_source_archive(self, *, path=None, version=None, overrides=None, skip=()):
+        version = version or self.ext_version
+        target = path or (self.root / 'dist/unaveraged-source.zip')
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payloads = {}
+        for name in build.SOURCE_FILES:
+            if name in skip:
+                continue
+            on_disk = self.root / name
+            if name in ('package.json', 'package-lock.json', 'digit/extension.json', 'vqa/extension.json'):
+                data = json.loads(on_disk.read_text())
+                if name == 'package-lock.json':
+                    data['version'] = version
+                    data.setdefault('packages', {}).setdefault('', {})['version'] = version
+                else:
+                    data['version'] = version
+                payloads[name] = encoded(data)
+            elif on_disk.is_file():
+                payloads[name] = on_disk.read_bytes()
+            else:
+                payloads[name] = (ROOT / name).read_bytes()
+                write(on_disk, payloads[name])
+        if overrides:
+            payloads.update(overrides)
+        with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in payloads.items():
+                archive.writestr(name, data)
+        return target
+
+    def test_check_tag_validates_strict_semver_and_all_version_files(self):
+        self.assertEqual(release.validate_release_tag('v0.1.0', root=self.root), '0.1.0')
+        with patch.object(release, 'ROOT', self.root), redirect_stdout(io.StringIO()) as stdout:
+            release.main(['check-tag', '--tag', 'v0.1.0'])
+        self.assertIn('v0.1.0', stdout.getvalue())
+
+        for bad_tag in ('', '0.1.0', 'v01.0.0', 'v0.1', 'v0.1.0-beta.1', 'v0.1.1', '--help'):
+            with self.subTest(bad_tag=bad_tag), self.assertRaises(ValueError):
+                release.validate_release_tag(bad_tag, root=self.root)
+
+        mutations = [
+            ('package.json', lambda d: d.update(version='0.2.0')),
+            ('package-lock.json', lambda d: d.update(version='0.2.0')),
+            ('package-lock.json', lambda d: d['packages'][''].update(version='0.2.0')),
+            ('digit/extension.json', lambda d: d.update(version='0.2.0')),
+            ('vqa/extension.json', lambda d: d.update(version='0.2.0')),
+        ]
+        for rel_path, mutate in mutations:
+            with self.subTest(rel_path=rel_path):
+                self.set_project_versions('0.1.0')
+                data = json.loads((self.root / rel_path).read_text())
+                mutate(data)
+                write(self.root / rel_path, encoded(data))
+                with self.assertRaisesRegex(ValueError, 'mismatch'):
+                    release.validate_release_tag('v0.1.0', root=self.root)
+
+    def test_stage_ci_and_discover_ci_assets_verify_archives_without_build_caches(self):
+        self.make_source_archive()
+        staged_dir = self.root / 'release-dist'
+        write(staged_dir / 'stale.zip', b'old leftover')
+
+        staged_assets = release.stage_ci(staged_dir, include_source=True, root=self.root)
+        self.assertFalse((staged_dir / 'stale.zip').exists())
+        expected_names = {
+            'unaveraged-digit-chrome.zip',
+            'unaveraged-digit-firefox.zip',
+            'unaveraged-vqa-chrome.zip',
+            'unaveraged-vqa-firefox.zip',
+            'unaveraged-source.zip',
+        }
+        self.assertEqual({asset['path'].name for asset in staged_assets}, expected_names)
+        checksum_lines = (staged_dir / 'SHA256SUMS').read_text().splitlines()
+        self.assertEqual(len(checksum_lines), 5)
+
+        # Simulate the CI release job where node_modules and .cache do not exist.
+        shutil.rmtree(self.root / 'node_modules')
+        discovered = release.discover_ci_assets(
+            staged_dir, require_source=True, expected_version=self.ext_version, root=self.root,
+        )
+        self.assertEqual({asset['path'].name for asset in discovered}, expected_names)
+        self.assertEqual(
+            [asset['kind'] for asset in discovered],
+            ['extension', 'extension', 'extension', 'extension', 'source'],
+        )
+
+    def test_discover_ci_assets_rejects_missing_tampered_symlink_and_unsafe_archives(self):
+        self.make_source_archive()
+        staged_dir = self.root / 'release-dist'
+        release.stage_ci(staged_dir, include_source=True, root=self.root)
+        shutil.rmtree(self.root / 'node_modules')
+
+        with self.assertRaisesRegex(ValueError, 'SHA256SUMS'):
+            (staged_dir / 'SHA256SUMS').write_text('0' * 64 + '  unaveraged-digit-chrome.zip\n')
+            release.discover_ci_assets(staged_dir, require_source=True, root=self.root)
+
+        # Recreate a clean staged directory using the valid staged ZIPs.
+        clean_dist = self.root / 'clean-dist'
+        clean_dist.mkdir()
+        for src in (staged_dir / n for n in (
+            'unaveraged-digit-chrome.zip', 'unaveraged-digit-firefox.zip',
+            'unaveraged-vqa-chrome.zip', 'unaveraged-vqa-firefox.zip', 'unaveraged-source.zip',
+        )):
+            shutil.copy2(src, clean_dist / src.name)
+
+        # Symlink SHA256SUMS rejected
+        outside_sums = self.root / 'outside-sums'
+        write(outside_sums, b'outside')
+        (clean_dist / 'SHA256SUMS').symlink_to(outside_sums)
+        with self.assertRaisesRegex(ValueError, 'regular file'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+        (clean_dist / 'SHA256SUMS').unlink()
+
+        # Symlink ZIP rejected
+        outside_zip = self.root / 'outside.zip'
+        outside_zip.write_bytes(b'not a zip')
+        (clean_dist / 'symlinked.zip').symlink_to(outside_zip)
+        with self.assertRaisesRegex(ValueError, 'regular file'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+        (clean_dist / 'symlinked.zip').unlink()
+
+        # Extra unexpected ZIP rejected
+        write(clean_dist / 'unexpected.zip', b'PK\x05\x06' + b'\x00' * 18)
+        with self.assertRaisesRegex(ValueError, 'Unexpected archive'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+        (clean_dist / 'unexpected.zip').unlink()
+
+        # Duplicate ZIP in subdir rejected
+        sub = clean_dist / 'dup'
+        sub.mkdir()
+        shutil.copy2(clean_dist / 'unaveraged-source.zip', sub / 'unaveraged-source.zip')
+        with self.assertRaisesRegex(ValueError, 'Duplicate archive'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+        shutil.rmtree(sub)
+
+        # Missing source archive rejected when required
+        saved_source = (clean_dist / 'unaveraged-source.zip').read_bytes()
+        (clean_dist / 'unaveraged-source.zip').unlink()
+        with self.assertRaisesRegex(ValueError, 'Missing required source archive'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+
+        # Source archive with symlink entry rejected
+        bad_source = clean_dist / 'unaveraged-source.zip'
+        with zipfile.ZipFile(bad_source, 'w') as archive:
+            info = zipfile.ZipInfo(build.SOURCE_FILES[0])
+            info.external_attr = 0o120777 << 16
+            archive.writestr(info, b'../secret')
+            for name in build.SOURCE_FILES[1:]:
+                archive.writestr(name, b'x')
+        with self.assertRaisesRegex(ValueError, 'symlink member'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+
+        # Source archive missing file rejected
+        self.make_source_archive(path=bad_source, skip=('.github/workflows/build.yml',))
+        with self.assertRaisesRegex(ValueError, 'unexpected or missing source entries'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+
+        # Corrupt ZIP CRC rejected
+        bad_source.write_bytes(saved_source)
+        raw = bytearray(bad_source.read_bytes())
+        raw[-30] ^= 0xFF
+        bad_source.write_bytes(bytes(raw))
+        with self.assertRaises((ValueError, zipfile.BadZipFile)):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+        bad_source.write_bytes(saved_source)
+
+        # Development manifest in staged extension ZIP rejected
+        chrome_zip = clean_dist / 'unaveraged-digit-chrome.zip'
+        entries = deepcopy(self.contents['digit'])
+        self.mutate_json(entries, 'manifest.json',
+                         lambda d: d['content_scripts'][0]['matches'].append('http://localhost/*'))
+        with zipfile.ZipFile(chrome_zip, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in entries.items():
+                archive.writestr(name, data)
+        with self.assertRaisesRegex(ValueError, 'non-production chrome manifest'):
+            release.discover_ci_assets(clean_dist, require_source=True, root=self.root)
+
+    def _ci_assets(self):
+        self.make_source_archive()
+        staged_dir = self.root / 'release-dist'
+        release.stage_ci(staged_dir, include_source=True, root=self.root)
+        return release.discover_ci_assets(
+            staged_dir, require_source=True, expected_version=self.ext_version, root=self.root,
+        )
+
+    def _expected_uploaded_records(self, assets):
+        records = [
+            {
+                'name': asset['path'].name,
+                'size': asset['bytes'],
+                'state': 'uploaded',
+                'digest': f"sha256:{asset['sha256']}",
+            }
+            for asset in assets
+        ]
+        checksums_raw = release.checksum_text(assets).encode()
+        records.append({
+            'name': 'SHA256SUMS',
+            'size': len(checksums_raw),
+            'state': 'uploaded',
+            'digest': f'sha256:{release.digest(checksums_raw)}',
+        })
+        return records
+
+    def test_publish_ci_stable_publishes_verified_draft_and_rejects_regression(self):
+        assets = self._ci_assets()
+        records = self._expected_uploaded_records(assets)
+        sha = 'A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2'
+        events = []
+
+        def run(command, **kwargs):
+            if command[:2] == ['gh', 'api']:
+                if 'releases?per_page=100' in command[4]:
+                    if 'create-draft' in events:
+                        events.append('verify')
+                        return subprocess.CompletedProcess(command, 0, json.dumps([[{
+                            'tag_name': 'v0.1.0',
+                            'draft': True,
+                            'prerelease': False,
+                            'assets': records,
+                        }]]), '')
+                    # Prerelease and draft newer versions do not block v0.1.0; v0.0.9 is older.
+                    return subprocess.CompletedProcess(command, 0, json.dumps([[
+                        {'tag_name': 'v0.0.9', 'draft': False, 'prerelease': False},
+                        {'tag_name': 'v9.9.9', 'draft': False, 'prerelease': True},
+                        {'tag_name': 'v9.9.8', 'draft': True, 'prerelease': False},
+                    ]]), '')
+            if command[:4] == ['gh', 'release', 'create', 'v0.1.0']:
+                events.append('create-draft')
+                self.assertIn('--draft', command)
+                self.assertIn('--target', command)
+                self.assertEqual(command[command.index('--target') + 1], sha.lower())
+                notes = Path(command[command.index('--notes-file') + 1]).read_text()
+                self.assertIn('unaveraged-source.zip', notes)
+                self.assertIn('SHA256SUMS', notes)
+                self.assertIn(sha.lower(), notes)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            if command[:4] == ['gh', 'release', 'edit', 'v0.1.0']:
+                events.append('publish')
+                self.assertIn('--draft=false', command)
+                self.assertIn('--latest', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            raise AssertionError(f'Unexpected command: {command}')
+
+        with patch.object(release.subprocess, 'run', side_effect=run), redirect_stdout(io.StringIO()):
+            release.publish_ci('stable', assets, sha, tag='v0.1.0', repo='owner/repository', root=self.root)
+        self.assertEqual(events, ['create-draft', 'verify', 'publish'])
+
+        # Existing tag or higher published stable release refuses before gh release create.
+        for existing_list, pattern in (
+            ([{'tag_name': 'v0.1.0', 'draft': True, 'prerelease': False}], 'already exists'),
+            ([{'tag_name': 'v0.2.0', 'draft': False, 'prerelease': False}], 'must be newer'),
+        ):
+            with self.subTest(pattern=pattern):
+                calls = []
+                def block_run(command, **kwargs):
+                    calls.append(command)
+                    if command[:2] == ['gh', 'api']:
+                        return subprocess.CompletedProcess(command, 0, json.dumps([existing_list]), '')
+                    raise AssertionError(f'Should not invoke mutation: {command}')
+                with patch.object(release.subprocess, 'run', side_effect=block_run):
+                    with self.assertRaisesRegex(ValueError, pattern):
+                        release.publish_ci('stable', assets, sha, tag='v0.1.0', repo='owner/repository', root=self.root)
+                self.assertEqual(len(calls), 1)
+
+    def test_publish_ci_stable_leaves_draft_unpublished_when_verification_fails(self):
+        assets = self._ci_assets()
+        valid_records = self._expected_uploaded_records(assets)
+        sha = 'a' * 40
+        bad_cases = []
+
+        r0 = deepcopy(valid_records)
+        del r0[0]['digest']
+        bad_cases.append((r0, 'valid GitHub SHA-256 digest'))
+
+        r1 = deepcopy(valid_records)
+        r1[0]['digest'] = 'sha256:' + '0' * 64
+        bad_cases.append((r1, 'checksum does not match'))
+
+        r2 = deepcopy(valid_records)
+        r2[0]['state'] = 'starter'
+        bad_cases.append((r2, 'incomplete'))
+
+        r3 = deepcopy(valid_records)
+        r3[0]['size'] += 1
+        bad_cases.append((r3, 'incomplete'))
+
+        r4 = valid_records[:-1]
+        bad_cases.append((r4, 'complete package set'))
+
+        for bad_assets, message in bad_cases:
+            with self.subTest(message=message):
+                commands = []
+                def run(command, **kwargs):
+                    commands.append(command)
+                    if command[:2] == ['gh', 'api']:
+                        created = any(c[:3] == ['gh', 'release', 'create'] for c in commands)
+                        payload = [[{'tag_name': 'v0.1.0', 'draft': True, 'prerelease': False, 'assets': bad_assets}]] if created else [[]]
+                        return subprocess.CompletedProcess(command, 0, json.dumps(payload), '')
+                    if command[:3] == ['gh', 'release', 'create']:
+                        return subprocess.CompletedProcess(command, 0, '', '')
+                    raise AssertionError(f'Publish edit must not run on failed verify: {command}')
+                with patch.object(release.subprocess, 'run', side_effect=run):
+                    with self.assertRaisesRegex(ValueError, message):
+                        release.publish_ci('stable', assets, sha, tag='v0.1.0', repo='owner/repository', root=self.root)
+                self.assertEqual([c[2] for c in commands if c[:2] == ['gh', 'release']], ['create'])
+
+    def test_publish_ci_nightly_creates_initial_and_rolls_existing_prerelease(self):
+        assets = self._ci_assets()
+        records = self._expected_uploaded_records(assets)
+        sha = 'abcdef1234567890abcdef1234567890abcdef12'
+
+        # Case 1: initial creation
+        create_events = []
+        def run_create(command, **kwargs):
+            if command[:2] == ['gh', 'api']:
+                if 'create-draft' in create_events:
+                    create_events.append('verify')
+                    return subprocess.CompletedProcess(command, 0, json.dumps([[{
+                        'tag_name': 'nightly', 'draft': True, 'prerelease': True, 'assets': records,
+                    }]]), '')
+                return subprocess.CompletedProcess(command, 0, '[[]]', '')
+            if command[:4] == ['gh', 'release', 'create', 'nightly']:
+                create_events.append('create-draft')
+                self.assertIn('--draft', command)
+                self.assertIn('--prerelease', command)
+                self.assertIn('--latest=false', command)
+                self.assertIn('unaveraged nightly (abcdef1)', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            if command[:4] == ['gh', 'release', 'edit', 'nightly']:
+                create_events.append('publish')
+                self.assertIn('--draft=false', command)
+                self.assertIn('--prerelease', command)
+                self.assertIn('--latest=false', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            raise AssertionError(f'Unexpected command: {command}')
+
+        with patch.object(release.subprocess, 'run', side_effect=run_create), redirect_stdout(io.StringIO()):
+            release.publish_ci('nightly', assets, sha, repo='owner/repository', root=self.root)
+        self.assertEqual(create_events, ['create-draft', 'verify', 'publish'])
+
+        # Case 2: rolling update deletes stale asset, verifies, patches git ref, edits release
+        update_events = []
+        def run_update(command, **kwargs):
+            if command[:2] == ['gh', 'api']:
+                path = command[4]
+                if 'releases?per_page=100' in path:
+                    if 'upload' in update_events:
+                        update_events.append('verify')
+                        return subprocess.CompletedProcess(command, 0, json.dumps([[{
+                            'tag_name': 'nightly', 'draft': False, 'prerelease': True, 'assets': records,
+                        }]]), '')
+                    return subprocess.CompletedProcess(command, 0, json.dumps([[{
+                        'tag_name': 'nightly',
+                        'draft': False,
+                        'prerelease': True,
+                        'assets': [{'name': 'unaveraged-digit-chrome.zip'}, {'name': 'stale-old.zip'}],
+                    }]]), '')
+                if 'matching-refs/tags/nightly' in path:
+                    return subprocess.CompletedProcess(command, 0, json.dumps([{'ref': 'refs/tags/nightly'}]), '')
+                if path.endswith('/git/refs/tags/nightly') and '--method' in command and 'PATCH' in command:
+                    update_events.append('patch-ref')
+                    self.assertIn(f'sha={sha}', command)
+                    return subprocess.CompletedProcess(command, 0, '{}', '')
+            if command[:4] == ['gh', 'release', 'upload', 'nightly']:
+                update_events.append('upload')
+                self.assertIn('--clobber', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            if command[:5] == ['gh', 'release', 'delete-asset', 'nightly', 'stale-old.zip']:
+                update_events.append('delete-stale')
+                self.assertIn('--yes', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            if command[:4] == ['gh', 'release', 'edit', 'nightly']:
+                update_events.append('edit')
+                self.assertIn('--target', command)
+                self.assertEqual(command[command.index('--target') + 1], sha)
+                self.assertIn('--draft=false', command)
+                self.assertIn('--prerelease', command)
+                self.assertIn('--latest=false', command)
+                return subprocess.CompletedProcess(command, 0, '', '')
+            raise AssertionError(f'Unexpected command: {command}')
+
+        with patch.object(release.subprocess, 'run', side_effect=run_update), redirect_stdout(io.StringIO()):
+            release.publish_ci('nightly', assets, sha, repo='owner/repository', root=self.root)
+        self.assertEqual(update_events, ['upload', 'delete-stale', 'verify', 'patch-ref', 'edit'])
+
+        # Case 2b: update_nightly_git_ref creates refs/tags/nightly via POST when matching-refs is empty
+        git_ref_calls = []
+        def run_post_ref(command, **kwargs):
+            git_ref_calls.append(command)
+            if 'matching-refs/tags/nightly' in command[4]:
+                return subprocess.CompletedProcess(command, 0, '[]', '')
+            if command[4].endswith('/git/refs') and '--method' in command and 'POST' in command:
+                self.assertIn('ref=refs/tags/nightly', command)
+                self.assertIn(f'sha={sha}', command)
+                return subprocess.CompletedProcess(command, 0, '{}', '')
+            raise AssertionError(f'Unexpected command: {command}')
+        with patch.object(release.subprocess, 'run', side_effect=run_post_ref):
+            release.update_nightly_git_ref('owner/repository', sha, root=self.root)
+        self.assertEqual(len(git_ref_calls), 2)
+
+        # Case 3: refuses invalid SHA or non-prerelease nightly before calling gh upload
+        with patch.object(release.subprocess, 'run') as mock_run:
+            with self.assertRaisesRegex(ValueError, '7..=40'):
+                release.publish_ci('nightly', assets, 'abc', repo='owner/repository', root=self.root)
+            mock_run.assert_not_called()
+
+        with patch.object(release.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, json.dumps([[{
+            'tag_name': 'nightly', 'draft': False, 'prerelease': False, 'assets': [],
+        }]]), '')) as mock_run:
+            with self.assertRaisesRegex(ValueError, 'nightly prerelease'):
+                release.publish_ci('nightly', assets, sha, repo='owner/repository', root=self.root)
+            self.assertEqual(mock_run.call_count, 1)
+
+    def test_release_ci_dry_run_cli_is_offline(self):
+        self.make_source_archive()
+        staged_dir = self.root / 'release-dist'
+        release.stage_ci(staged_dir, include_source=True, root=self.root)
+        stdout = io.StringIO()
+        with patch.object(release, 'ROOT', self.root), \
+             patch.object(release.subprocess, 'run') as mock_run, \
+             redirect_stdout(stdout):
+            release.main([
+                'release-ci',
+                '--channel', 'nightly',
+                '--sha', 'abcdef1',
+                '--dist', str(staged_dir),
+                '--repo', 'owner/repository',
+                '--require-source',
+                '--dry-run',
+            ])
+        mock_run.assert_not_called()
+        self.assertIn('Dry run (nightly -> nightly @ abcdef1 on owner/repository)', stdout.getvalue())
+        self.assertIn('unaveraged-source.zip', stdout.getvalue())
+
+    def test_verify_ci_validates_staged_archives_and_rejects_mismatched_tag(self):
+        self.make_source_archive()
+        staged_dir = self.root / 'release-dist'
+        release.stage_ci(staged_dir, include_source=True, root=self.root)
+        shutil.rmtree(self.root / 'node_modules')
+        stdout = io.StringIO()
+        with patch.object(release, 'ROOT', self.root), redirect_stdout(stdout):
+            release.main([
+                'verify-ci',
+                '--tag', 'v0.1.0',
+                '--dist', str(staged_dir),
+                '--require-source',
+                '--require-checksums',
+            ])
+        self.assertIn('unaveraged-digit-chrome.zip', stdout.getvalue())
+        self.assertIn('unaveraged-vqa-chrome.zip', stdout.getvalue())
+        with patch.object(release, 'ROOT', self.root), self.assertRaises(SystemExit) as cm:
+            release.main([
+                'verify-ci',
+                '--tag', 'v0.1.1',
+                '--dist', str(staged_dir),
+                '--require-source',
+                '--require-checksums',
+            ])
+        self.assertNotEqual(cm.exception.code, 0)
+        (staged_dir / 'SHA256SUMS').unlink()
+        with self.assertRaisesRegex(ValueError, 'Missing required SHA256SUMS'):
+            release.discover_ci_assets(
+                staged_dir, require_source=True, require_checksums=True, root=self.root,
+            )
+        with patch.object(release, 'ROOT', self.root), self.assertRaises(SystemExit) as cm_missing:
+            release.main([
+                'verify-ci',
+                '--tag', 'v0.1.0',
+                '--dist', str(staged_dir),
+                '--require-source',
+                '--require-checksums',
+            ])
+        self.assertNotEqual(cm_missing.exception.code, 0)
 
 
 if __name__ == '__main__':

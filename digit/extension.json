@@ -47,5 +47,9 @@
   "scripts": [
     "adapter.js"
   ],
-  "default_precision": "conv4-linear2"
+  "default_precision": "conv4-linear2",
+  "chrome_web_store": {
+    "publisher_id": "d818c2f3-ad14-4f9d-9c6e-cf99c8fa8dee",
+    "item_id": "aibjkkjaomgeppjjeekimpdoonndhmmb"
+  }
 }

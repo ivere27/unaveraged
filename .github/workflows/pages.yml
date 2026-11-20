@@ -32,20 +32,31 @@ jobs:
           cache-dependency-path: docs/requirements.txt
       - name: Install documentation renderer only
         run: python3 -m pip install -r docs/requirements.txt
-      - name: Download models generated locally
+      - name: Download release model packages
+        id: release_models
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if ! gh release download models --repo "$GITHUB_REPOSITORY" \
-            --dir dist/models --pattern 'unaveraged-*-chrome.zip' --pattern SHA256SUMS; then
-            echo '::error::Local model packages are required. Run make package and make release locally before deploying Pages.'
+          tag=""
+          if [ "$(gh release view models --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft' 2>/dev/null || true)" = "false" ]; then
+            tag="models"
+          elif latest="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null)" && [ -n "$latest" ]; then
+            tag="$latest"
+          elif [ "$(gh release view nightly --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft' 2>/dev/null || true)" = "false" ]; then
+            tag="nightly"
+          else
+            echo '::error::No published release (models, stable tag, or nightly) is available to supply Chrome model packages.'
             exit 1
           fi
+          echo "Using release tag: $tag"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" \
+            --dir dist/models --pattern 'unaveraged-*-chrome.zip' --pattern SHA256SUMS
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - name: Check documentation and staging
         run: python3 -m unittest shared.tests.test_docs shared.tests.test_pages
-      - name: Stage current source with verified local model bytes
+      - name: Stage current source with verified release model bytes
         run: >-
-          python3 shared/pages.py --release-dir dist/models --tag models
+          python3 shared/pages.py --release-dir dist/models --tag "${{ steps.release_models.outputs.tag }}"
           --current-source --source-commit "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY"
       - name: Save a downloadable preview
         uses: actions/upload-artifact@v4
