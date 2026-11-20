@@ -7,8 +7,32 @@ Digit와 VQA는 각각 별도의 스토어 항목으로 등록합니다. 코드 
 
 [설치 안내](README.md#install)의 일반 Chrome 배포 ZIP을 업로드하세요.
 지원 브라우저 버전과 패키지 경로는 해당 안내를 기준으로 합니다. 각 ZIP 루트에는
-`manifest.json`이 있으며, `chrome-dev`와 소스 ZIP은 스토어 설치 패키지로 사용하지 않습니다.
+`manifest.json`이 있으며, `chrome-dev`, `firefox`, 소스 ZIP은 스토어 설치 패키지로 사용하지 않습니다.
 검사와 배포 명령은 [테스트](README.md#test)와 [릴리스 안내](README.md#github-releases)를 따릅니다.
+
+## Chrome 웹 스토어 자동 업로드 및 심사 제출
+
+`vX.Y.Z` Stable 태그를 푸시하면 [배포 워크플로](.github/workflows/build.yml)의 `publish-cws` 잡이
+GitHub Release 공개 직후 Chrome용 프로덕션 ZIP 두 개(`unaveraged-digit-chrome.zip`,
+`unaveraged-vqa-chrome.zip`)를 [Chrome Web Store API 클라이언트](shared/cws.mjs)로
+각 스토어 항목에 업로드하고 즉시 심사 제출(`:publish`)까지 수행합니다.
+`main` 브랜치 `nightly` 빌드는 GitHub Releases에만 올라가며 Chrome 웹 스토어에는 제출하지 않습니다.
+
+1. GitHub 저장소 **Settings → Environments**에서 `chrome-web-store` 환경을 만들고,
+   배포 태그 규칙을 `v*`로 제한합니다. (원하면 `Required reviewers`를 켜서 제출 직전 수동 승인 게이트를 둘 수 있습니다.)
+2. 해당 환경의 **Environment secrets**에 서비스 계정 JSON(`cws-service-account.private.json` 형식,
+   Git 커밋 제외) 내용을 `CWS_SERVICE_ACCOUNT_JSON`으로 등록합니다.
+3. 각 항목의 Publisher ID와 Item ID는 [digit/extension.json](digit/extension.json)과
+   [vqa/extension.json](vqa/extension.json)의 `chrome_web_store` 필드와 아래 문서를 기준으로 일치시킵니다.
+
+로컬에서도 서비스 계정 키(`cws-service-account.private.json` 또는 `CWS_KEY_FILE`)로 상태를
+조회하거나 수동 실행할 수 있습니다.
+
+```bash
+node shared/cws.mjs status d818c2f3-ad14-4f9d-9c6e-cf99c8fa8dee aibjkkjaomgeppjjeekimpdoonndhmmb
+node shared/cws.mjs status d818c2f3-ad14-4f9d-9c6e-cf99c8fa8dee fdbkjhljjjacepioaemjjigaicbammaa
+node shared/cws.mjs publish-ci --tag v0.1.0 --dist release-dist --require-checksums --dry-run
+```
 
 ## 홈페이지와 개인정보처리방침 URL
 

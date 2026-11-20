@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
@@ -66,7 +67,7 @@ async function runProject(project, precision) {
     assert.equal(buildInfo.model_variant, expectedVariant);
     if (expectedVariant === 'ptq') {
       assert.equal(buildInfo.model_quantization.method, frozenProfiles[precision]?.method ?? 'volvoxai-ptq');
-      const manifestFile = fs.existsSync(path.join(buildRoot, 'model/model-manifest.json')) ? 'model/model-manifest.json' : 'model/manifest.json';
+      const manifestFile = existsSync(path.join(buildRoot, 'model/model-manifest.json')) ? 'model/model-manifest.json' : 'model/manifest.json';
       const modelManifest = JSON.parse(await fs.readFile(path.join(buildRoot, manifestFile), 'utf8'));
       assert.deepEqual(buildInfo.model_quantization, modelManifest.quantization);
       if (modelManifest.frozen_candidate) {
@@ -76,7 +77,7 @@ async function runProject(project, precision) {
         assert.equal(modelManifest.converter.source, 'frozen-candidate-import');
         assert.equal(modelManifest.quantization.version, modelManifest.converter.version);
         for (const [file, expected] of Object.entries(expectedProfile.sha256)) {
-          const targetFile = file === 'manifest.json' && !fs.existsSync(path.join(buildRoot, 'model', file)) ? 'model-manifest.json' : file;
+          const targetFile = file === 'manifest.json' && !existsSync(path.join(buildRoot, 'model', file)) ? 'model-manifest.json' : file;
           const bytes = await fs.readFile(path.join(buildRoot, 'model', targetFile));
           assert.equal(createHash('sha256').update(bytes).digest('hex'), expected);
         }

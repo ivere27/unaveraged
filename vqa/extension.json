@@ -46,5 +46,9 @@
     "adapter.js",
     "tokenizer.js"
   ],
-  "default_precision": "w4a8"
+  "default_precision": "w4a8",
+  "chrome_web_store": {
+    "publisher_id": "d818c2f3-ad14-4f9d-9c6e-cf99c8fa8dee",
+    "item_id": "fdbkjhljjjacepioaemjjigaicbammaa"
+  }
 }

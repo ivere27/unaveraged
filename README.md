@@ -137,7 +137,7 @@ The everyday commands are:
 | `make package` | Refresh extension packages from cached models, without training. |
 | `make test` | Test existing packages, without rebuilding or training models. |
 | `make demo` | Stage existing packages and serve the example at `http://127.0.0.1:8000/example/`. |
-| `make release` | Validate and upload local packages to the fixed model store for Pages. |
+| `make release` | Validate local packages and upload them manually to GitHub Releases. |
 | `make clean` | Remove `dist/`; keep downloaded sources and model caches. |
 | `make help` | Show this command list. |
 
@@ -165,44 +165,66 @@ match the graph, weight and provenance hashes in the corresponding
 
 ## GitHub Releases
 
-`make release` validates the existing four ZIPs and uploads them with
-`SHA256SUMS` to the fixed `models` Release, creating it if necessary and replacing
-its assets on later uploads. It never trains, calibrates or rebuilds models.
-This Release is a model store; its tag is not the Pages source revision.
-No `TAG` input is needed. Use `make release DRY_RUN=1` for an offline preview or
-`make release ACTION=check` for local validation only.
+[Build, test, and release](.github/workflows/build.yml) automates transparent
+open-source builds, full browser tests, and GitHub Releases on `ubuntu-24.04`
+runners:
 
-For a separate versioned extension release, supply `TAG=vX.Y.Z` as below.
+- **Pull requests** build both default quantized models (`conv4-linear2` QAT for
+  Digit, `w4a8` PTQ for VQA) from public sources (`make`), run the full
+  verification suite (`make test`), verify the staged Pages demo
+  (`make pages && npm run test:example`), run `make release ACTION=check`, and
+  validate the exported source archive (`make source`).
+- **Default-branch pushes (`main` / `master`)** and manual workflow dispatches
+  with `release_nightly` enabled run the same build and test suite and update
+  the rolling **`nightly`** pre-release on GitHub Releases once every check
+  passes. (`nightly` builds are published only on GitHub Releases and are not
+  submitted to the Chrome Web Store.)
+- **Version tags (`vX.Y.Z`)** first verify in `preflight` that the tag matches
+  `package.json`, `package-lock.json`, `digit/extension.json`, and
+  `vqa/extension.json` (`python3 shared/release.py check-tag --tag vX.Y.Z`).
+  After the build and test suite succeed, the `release` job uploads the four
+  Chrome/Firefox extension ZIPs, `unaveraged-source.zip`, and `SHA256SUMS` to a
+  draft release, verifies each GitHub asset's uploaded state, size, and SHA-256
+  digest, and then publishes the non-draft stable release marked as latest.
+  Existing stable releases and older/equal versions are never overwritten.
+- **Automated Chrome Web Store publishing (`vX.Y.Z` tags only)**: once `release`
+  succeeds on a `v*` tag push, the `publish-cws` job runs inside the
+  `chrome-web-store` GitHub Environment, re-verifies `release-dist/SHA256SUMS`
+  with `python3 shared/release.py verify-ci`, and runs
+  [shared/cws.mjs](shared/cws.mjs) using `secrets.CWS_SERVICE_ACCOUNT_JSON` to
+  upload `unaveraged-digit-chrome.zip` and `unaveraged-vqa-chrome.zip` and submit
+  both items for Chrome Web Store review. See [store registration notes](STORE.md)
+  for the one-time environment secret setup and CWS item IDs.
 
-Install [GitHub CLI](https://cli.github.com/), sign in with `gh auth login`, and
-push the release commit to GitHub. After the first `make`, refresh packages when
-extension source changes, test them and publish:
+To cut a new stable release cleanly from `main`:
+
+1. Update `"version"` consistently across `package.json`, `package-lock.json`,
+   `digit/extension.json`, and `vqa/extension.json` (or run
+   `npm version X.Y.Z --no-git-tag-version` and update both `extension.json`
+   files), then run `python3 shared/release.py check-tag --tag vX.Y.Z`.
+2. Commit and push to `main`, then push the release tag:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+Manual local publishing via `make release` and [GitHub CLI](https://cli.github.com/)
+remains available (`gh auth login`):
 
 ```bash
 make package
 make test
-make release TAG=v0.1.0 REPO=OWNER/REPO
+make release TAG=vX.Y.Z REPO=OWNER/REPO
 ```
 
-`release` uploads four production ZIPs: Chrome and Firefox packages for
-**Digit conv4-linear2 QAT** and **VQA W4A8 PTQ**, plus `SHA256SUMS`.
-It checks model hashes, runtime, production configuration and
-archive contents before uploading.
-A new tag targets the current commit. `TAG` is the repository release version;
-the extension and runtime versions remain recorded inside each ZIP.
-Omit `REPO` when GitHub CLI can infer it from the Git remote.
-
-Use `DRY_RUN=1` to validate the ZIPs and preview the command without uploading,
-or `DRAFT=1` to create a draft release. For a release that already exists:
-
-```bash
-make release ACTION=upload TAG=v0.1.0 REPO=OWNER/REPO
-```
-
-Add `CLOBBER=1` to replace assets with the same names. Release commands use the
-existing default builds in `dist/`. `make release ACTION=check` validates them
-offline without a GitHub login. Re-run `make` when changing model generation;
-`make package` is sufficient for extension-only changes.
+Running `make release` without `TAG` targets the rolling `models` pre-release.
+Use `make release ACTION=check` for offline validation, `DRY_RUN=1` to preview
+without uploading, `DRAFT=1` for a draft release, or
+`make release ACTION=upload TAG=vX.Y.Z CLOBBER=1` to upload assets to an existing
+release. Release commands use the existing default builds in `dist/` and never
+retrain models (`make` rebuilds models; `make package` is sufficient for
+extension-only changes).
 
 ## Performance
 
@@ -324,38 +346,30 @@ run `make package` first. To stage files without starting a server, run
 `.venv/bin/python shared/pages.py`.
 
 For hosting, choose **Settings → Pages → Source → GitHub Actions** once.
-Models are generated **only on your local machine**. Prepare and upload them:
-
-```bash
-make package        # Reuse existing locally generated models
-make release        # Create/update the fixed model store; no TAG input needed
-```
-
-If model caches do not exist yet, run `make` locally before packaging. Run local
-checks with `make test` before uploading changed models. GitHub never runs model
-training, conversion or calibration, and does not generate replacement models
-when assets are missing. Missing or incompatible uploads stop deployment.
-
 The **Build and publish example** workflow deploys on pushes to the default
-branch (`main` in this repository; `master` is also supported). After committing
-source changes, push:
+branch (`main` in this repository; `master` is also supported) after at least
+one compatible release exists (`models`, a published `vX.Y.Z` stable release,
+or the CI `nightly` pre-release):
 
 ```bash
 git push origin main
 ```
 
-Actions downloads the locally built Chrome ZIPs and `SHA256SUMS` from the fixed
-`models` Release. It verifies checksums, keeps model and vendor runtime bytes
-unchanged, and combines them with the current branch's documentation, demo and
-compatible adapter/runtime glue code. Model binaries stay out of Git history.
-The browser serves all required files from the Pages origin; the demo identifies
-its source commit and the uploaded model archive hashes. Source-only changes
-can reuse the same model upload. When local models change, run `make release`
-again, then push source changes or manually run the workflow with **deploy** checked.
+Actions selects `models` first if present, otherwise the latest published stable
+release, and falls back to `nightly` when no stable release exists yet. It
+downloads the Chrome ZIPs and `SHA256SUMS`, verifies checksums, keeps model and
+vendor runtime bytes unchanged, and combines them with the current branch's
+documentation, demo and compatible adapter/runtime glue code. Model binaries stay
+out of Git history. The browser serves all required files from the Pages origin;
+the demo identifies its source commit and the uploaded model archive hashes.
+Source-only changes can reuse the same release assets. When models change in a
+local workflow (`make package && make release`) or after a new CI `nightly` or
+`vX.Y.Z` release is published, push source changes or manually run **Build and
+publish example** with **deploy** checked.
 
 For a downloadable preview without deployment, run the workflow manually with
-**deploy** unchecked on the default branch. Versioned extension Releases remain
-optional; Pages always uses the fixed local-model store.
+**deploy** unchecked on the default branch. Missing or incompatible release
+assets stop deployment rather than silently falling back to unverified bytes.
 
 A private personal repository needs GitHub Pro for Pages. The repository can
 remain private while the site is public; deployed HTML, JavaScript and model

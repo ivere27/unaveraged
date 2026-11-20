@@ -5,9 +5,11 @@ import hashlib
 import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shlex
+import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -246,6 +248,378 @@ def collect_assets(root=ROOT, browser='all'):
     return [validate_archive(root, project, selected) for project in build.PROJECTS for selected in browsers]
 
 
+_SEMVER_RE = re.compile(r'^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')
+_REPO_RE = re.compile(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+')
+_SHA_RE = re.compile(r'[0-9a-fA-F]{7,40}')
+_SHA256_HEX_RE = re.compile(r'[0-9a-f]{64}')
+_GITHUB_DIGEST_RE = re.compile(r'sha256:[0-9a-f]{64}')
+
+
+def parse_semver_tuple(value):
+    if not isinstance(value, str):
+        return None
+    match = _SEMVER_RE.fullmatch(value)
+    if not match:
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
+def project_versions(root=ROOT):
+    package = read(root / 'package.json')
+    lock = read(root / 'package-lock.json')
+    versions = {
+        'package.json': package.get('version'),
+        'package-lock.json': lock.get('version'),
+        'package-lock.json packages[""].version': lock.get('packages', {}).get('', {}).get('version'),
+    }
+    for project in build.PROJECTS:
+        config = read(root / project / 'extension.json')
+        versions[f'{project}/extension.json'] = config.get('version')
+    for source, value in versions.items():
+        require(parse_semver_tuple(value) is not None,
+                f'{source} version {value!r} must be a stable MAJOR.MINOR.PATCH version')
+    distinct = set(versions.values())
+    require(len(distinct) == 1,
+            'Project version mismatch: ' + ', '.join(f'{key}={value}' for key, value in versions.items()))
+    return next(iter(distinct))
+
+
+def validate_release_tag(tag, root=ROOT):
+    require(isinstance(tag, str) and tag.startswith('v'),
+            f"Release tag '{tag}' must start with v and use vMAJOR.MINOR.PATCH (e.g. v0.1.0)")
+    stripped = tag[1:]
+    require(parse_semver_tuple(stripped) is not None,
+            f"Release tag '{tag}' must match vMAJOR.MINOR.PATCH (e.g. v0.1.0)")
+    version = project_versions(root)
+    require(stripped == version,
+            f"Release tag '{tag}' does not match project version v{version}")
+    return version
+
+
+def _validate_zip_container(raw, filename):
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        bad = archive.testzip()
+        require(bad is None, f'{filename}: corrupt ZIP member {bad}')
+        infos = archive.infolist()
+        require(infos, f'{filename}: empty archive')
+        seen = set()
+        seen_folded = set()
+        names = []
+        for info in infos:
+            name = info.filename
+            require(bool(name), f'{filename}: empty ZIP entry name')
+            require(not name.startswith('/') and '\\' not in name and ':' not in name,
+                    f'{filename}: unsafe ZIP member path: {name}')
+            require(all(ord(ch) >= 32 and ord(ch) != 127 for ch in name),
+                    f'{filename}: control characters in ZIP member path')
+            trimmed = name[:-1] if name.endswith('/') else name
+            parts = trimmed.split('/')
+            require(all(part not in ('', '.', '..') for part in parts),
+                    f'{filename}: unsafe ZIP member path: {name}')
+            normalized = '/'.join(parts)
+            folded = normalized.lower()
+            require(name not in seen and folded not in seen_folded,
+                    f'{filename}: duplicate ZIP member {normalized}')
+            seen.add(name)
+            seen_folded.add(folded)
+            mode = info.external_attr >> 16
+            if mode:
+                fmt = stat.S_IFMT(mode)
+                require(not stat.S_ISLNK(mode), f'{filename}: symlink member not allowed: {name}')
+                require(fmt in (0, stat.S_IFREG, stat.S_IFDIR),
+                        f'{filename}: special ZIP member not allowed: {name}')
+                require((mode & 0o6000) == 0,
+                        f'{filename}: setuid/setgid ZIP member not allowed: {name}')
+            if info.is_dir():
+                continue
+            names.append(name)
+        return names
+
+
+def validate_ci_source_archive(path, *, expected_version=None, verify_against_root=None):
+    require(path.name == 'unaveraged-source.zip', f'Unexpected source archive name: {path.name}')
+    require(path.is_file() and not path.is_symlink(), f'Missing source archive: {path}')
+    raw = path.read_bytes()
+    names = _validate_zip_container(raw, path.name)
+    expected_files = set(build.SOURCE_FILES)
+    require(set(names) == expected_files,
+            f'{path.name}: unexpected or missing source entries')
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        if expected_version is not None:
+            pkg = json.loads(archive.read('package.json'))
+            lock = json.loads(archive.read('package-lock.json'))
+            archived_versions = {
+                'package.json': pkg.get('version'),
+                'package-lock.json': lock.get('version'),
+                'package-lock.json packages[""].version': lock.get('packages', {}).get('', {}).get('version'),
+            }
+            for project in build.PROJECTS:
+                ext = json.loads(archive.read(f'{project}/extension.json'))
+                archived_versions[f'{project}/extension.json'] = ext.get('version')
+            for source, value in archived_versions.items():
+                require(value == expected_version,
+                        f'{path.name}: {source} version {value!r} does not match expected {expected_version!r}')
+        if verify_against_root is not None:
+            for name in build.SOURCE_FILES:
+                source = verify_against_root / name
+                require(source.is_file() and not source.is_symlink(),
+                        f'{path.name}: missing source file on disk: {name}')
+                require(archive.read(name) == source.read_bytes(),
+                        f'{path.name}: stale source entry: {name}; run make source')
+    return {
+        'path': path,
+        'kind': 'source',
+        'project': 'source',
+        'browser': 'source',
+        'precision': 'source',
+        'version': expected_version or '',
+        'runtime_version': '',
+        'sha256': digest(raw),
+        'bytes': len(raw),
+    }
+
+
+def validate_ci_extension_archive(path, project, browser='chrome', *, expected_version=None, root=ROOT):
+    require(project in build.PROJECTS, f'Unknown extension: {project}')
+    require(browser in build.BROWSERS, f'Unknown browser: {browser}')
+    config = read(root / project / 'extension.json')
+    precision = config['default_precision']
+    expected_name = f"{config['slug']}-{browser}.zip"
+    require(path.name == expected_name, f'{project}: expected filename {expected_name}, got {path.name}')
+    require(path.is_file() and not path.is_symlink(), f'Missing extension ZIP: {path}')
+    frozen_file = root / project / 'frozen-profiles.json'
+    profile = read(frozen_file)['profiles'].get(precision) if frozen_file.is_file() else None
+    if profile is None:
+        profile = DEFAULT_PROFILES.get(project, {}).get(precision)
+    runtime_version = read(root / 'package.json')['config']['volvoxai_version']
+    lock = read(root / 'package-lock.json')['packages']['node_modules/volvoxai-lite']
+    require(lock.get('version') == runtime_version
+            and lock.get('resolved') == f'https://registry.npmjs.org/volvoxai-lite/-/volvoxai-lite-{runtime_version}.tgz'
+            and lock.get('integrity'),
+            'Invalid pinned runtime entry in package-lock.json')
+    raw = path.read_bytes()
+    names = _validate_zip_container(raw, path.name)
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        copied = source_files(root, project, config)
+        model_manifest_name = 'model/model-manifest.json' if 'model/model-manifest.json' in names else 'model/manifest.json'
+        model_manifest_file = 'model-manifest.json' if 'model/model-manifest.json' in names else 'manifest.json'
+        info = json.loads(archive.read('build-info.json'))
+        model = json.loads(archive.read(model_manifest_name))
+        frozen = 'frozen_candidate' in model
+        if frozen:
+            require(profile is not None and 'sha256' in profile, f'{project}: unknown frozen candidate')
+            model_files = {model_manifest_file, *profile['sha256']}
+        elif project == 'digit':
+            model_files = {model_manifest_file, 'graph.json', 'model.safetensors'}
+        else:
+            model_files = {model_manifest_file, 'config.json', 'vocab.json',
+                           'encoder/graph.json', 'encoder/model.safetensors',
+                           'decoder/graph.json', 'decoder/model.safetensors',
+                           'shared/token-embedding.safetensors'}
+        allowed = {*copied, 'manifest.json', 'build-info.json', 'privacy.html',
+                   'shared/extension/site-config.js', 'model/LICENSE.txt',
+                   *(f'model/{name}' for name in model_files),
+                   'vendor/volvoxai.lite.min.js', 'vendor/volvoxai.lite.wasm'}
+        if 'NOTICE' in config['model']['common_files']:
+            allowed.add('model/NOTICE.txt')
+        require(len(names) == len(set(names)) and set(names) == allowed,
+                f'{project}: unexpected or missing ZIP entries in {path.name}')
+        require(info['extension'] == project and info['extension_version'] == config['version']
+                and info.get('browser') == browser
+                and info['model_precision'] == precision and info['model_variant'] == 'ptq'
+                and info.get('model_repository') == config['model']['repository']
+                and info.get('model_revision') == config['model']['revision']
+                and info['runtime_profile'] == 'lite' and info['runtime_version'] == runtime_version,
+                f'{project}: ZIP does not match the selected model/runtime')
+        if expected_version is not None:
+            require(info['extension_version'] == expected_version,
+                    f'{project}: extension version {info["extension_version"]} does not match expected {expected_version}')
+        require(all(info['dependencies'][kind]['version'] == runtime_version
+                    and info['dependencies'][kind]['source'] == 'published' for kind in ('javascript', 'python')),
+                f'{project}: release requires published npm/wheel dependencies')
+        require(info['dependencies']['javascript'].get('integrity') == lock['integrity']
+                and info['dependencies']['javascript'].get('resolved') == lock['resolved'],
+                f'{project}: npm provenance differs from the lockfile')
+        require(model['quantization']['precision'] == precision
+                and info['model_quantization'] == model['quantization'],
+                f'{project}: selected quantization metadata differs')
+        if frozen:
+            require(model.get('frozen_candidate') == profile
+                    and model['quantization'].get('packed_arithmetic') == 'dynamic-i8',
+                    f'{project}: selected quantization metadata differs')
+            for name, expected in profile['sha256'].items():
+                require(digest(archive.read('model/' + name)) == expected, f'{project}: unselected model: {name}')
+        require(set(info['model_sha256']) == model_files, f'{project}: incomplete model identity')
+        for name, expected in info['model_sha256'].items():
+            require(digest(archive.read('model/' + name)) == expected, f'{project}: model hash mismatch: {name}')
+        runtime_names = ('volvoxai.lite.min.js', 'volvoxai.lite.wasm')
+        require(set(info['runtime_sha256']) == set(runtime_names), f'{project}: incomplete runtime identity')
+        for name in runtime_names:
+            payload = archive.read('vendor/' + name)
+            require(digest(payload) == info['runtime_sha256'][name] and len(payload) > 0,
+                    f'{project}: runtime mismatch: {name}')
+        for name, source in copied.items():
+            if name == 'vendor/LICENSE.txt':
+                require(len(archive.read(name).strip()) > 0, f'{project}: empty vendor license')
+            elif source.is_file():
+                require(archive.read(name) == source.read_bytes(), f'{project}: stale packaged source: {name}')
+        sites = build.site_config(config, root=root)
+        require(json.loads(archive.read('manifest.json')) == build.extension_manifest(config, sites, root=root, browser=browser),
+                f'{project}: non-production {browser} manifest')
+        expected_sites = 'globalThis.RECEIPT_READER_SITES = ' + json.dumps(sites, ensure_ascii=False) + ';\n'
+        require(archive.read('shared/extension/site-config.js').decode() == expected_sites,
+                f'{project}: non-production site configuration')
+        privacy_bytes = archive.read('privacy.html')
+        privacy_text = privacy_bytes.decode()
+        require(privacy_text.startswith('<!doctype html>') and len(privacy_text.strip()) > 0,
+                f'{project}: invalid privacy page')
+        if (root / 'PRIVACY.md').is_file():
+            try:
+                expected_privacy = build.privacy_page(root=root)
+            except RuntimeError:
+                expected_privacy = None
+            if expected_privacy is not None:
+                require(privacy_text == expected_privacy, f'{project}: stale privacy page')
+    return {
+        'path': path,
+        'kind': 'extension',
+        'project': project,
+        'browser': browser,
+        'precision': precision,
+        'version': config['version'],
+        'runtime_version': runtime_version,
+        'sha256': digest(raw),
+        'bytes': len(raw),
+    }
+
+
+def _parse_checksums(raw_text, expected_names):
+    parsed = {}
+    for line in raw_text.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split(maxsplit=1)
+        require(len(parts) == 2, f'Invalid SHA256SUMS line: {line!r}')
+        digest_value, name = parts[0], parts[1].lstrip('*')
+        require(_SHA256_HEX_RE.fullmatch(digest_value) is not None,
+                f'Invalid SHA-256 digest in SHA256SUMS: {digest_value!r}')
+        require(name not in parsed, f'Duplicate SHA256SUMS entry: {name}')
+        parsed[name] = digest_value
+    require(set(parsed) == set(expected_names),
+            'SHA256SUMS entries do not match staged archives: expected '
+            + ', '.join(sorted(expected_names)) + '; got ' + ', '.join(sorted(parsed)))
+    return parsed
+
+
+def _walk_sorted(directory, out):
+    for path in sorted(directory.iterdir()):
+        if path.is_symlink():
+            if path.name.endswith('.zip') or path.name == 'SHA256SUMS':
+                raise ValueError(f'Package must be a regular file inside dist: {path.name}')
+            continue
+        if path.is_dir():
+            _walk_sorted(path, out)
+        elif path.is_file():
+            out.append(path)
+
+
+def discover_ci_assets(dist, *, require_source=False, require_checksums=False, expected_version=None, root=ROOT):
+    dist = Path(dist)
+    require(dist.exists() and dist.is_dir() and not dist.is_symlink(),
+            f'No release archives in {dist}; build packages first')
+    dist_canon = dist.resolve()
+    expected_ext_map = {}
+    for project in build.PROJECTS:
+        config = read(root / project / 'extension.json')
+        for browser in build.BROWSERS:
+            expected_ext_map[f"{config['slug']}-{browser}.zip"] = (project, browser)
+    allowed_zips = set(expected_ext_map) | {'unaveraged-source.zip'}
+
+    files = []
+    _walk_sorted(dist, files)
+    discovered = {}
+    for path in files:
+        if path.suffix != '.zip':
+            continue
+        require(path.resolve().is_relative_to(dist_canon),
+                f'Package must stay inside dist: {path.name}')
+        require(path.name in allowed_zips,
+                f'Unexpected archive in {dist}: {path.name}')
+        require(path.name not in discovered,
+                f'Duplicate archive for {path.name}; keep only one in {dist}')
+        discovered[path.name] = path
+
+    missing = [name for name in expected_ext_map if name not in discovered]
+    require(not missing, 'Missing required extension ZIP(s): ' + ', '.join(missing))
+    if require_source:
+        require('unaveraged-source.zip' in discovered,
+                f'Missing required source archive unaveraged-source.zip in {dist}')
+
+    assets = []
+    for name, (project, browser) in expected_ext_map.items():
+        assets.append(validate_ci_extension_archive(
+            discovered[name], project, browser, expected_version=expected_version, root=root,
+        ))
+    if 'unaveraged-source.zip' in discovered:
+        assets.append(validate_ci_source_archive(
+            discovered['unaveraged-source.zip'], expected_version=expected_version,
+        ))
+
+    checksum_path = dist / 'SHA256SUMS'
+    require(not checksum_path.is_symlink(), 'SHA256SUMS must be a regular file')
+    if require_checksums:
+        require(checksum_path.is_file(), f'Missing required SHA256SUMS in {dist}')
+    if checksum_path.is_file():
+        expected_checksums = _parse_checksums(
+            checksum_path.read_text(),
+            [asset['path'].name for asset in assets],
+        )
+        for asset in assets:
+            name = asset['path'].name
+            require(asset['sha256'] == expected_checksums[name],
+                    f'SHA256SUMS mismatch for {name}')
+    return assets
+
+
+def stage_ci(out_dir, *, browser='all', include_source=True, dry_run=False, root=ROOT):
+    require(browser in ('all', *build.BROWSERS), f'Unknown browser: {browser}')
+    version = project_versions(root)
+    assets = collect_assets(root=root, browser=browser)
+    for asset in assets:
+        require(asset['version'] == version,
+                f"{asset['project']} version {asset['version']} does not match project version {version}")
+    if include_source:
+        source_zip = root / 'dist/unaveraged-source.zip'
+        assets.append(validate_ci_source_archive(
+            source_zip, expected_version=version, verify_against_root=root,
+        ))
+    out_resolved = Path(out_dir).resolve()
+    protected = [(root / name).resolve() for name in (
+        'docs', 'example', 'shared', 'digit', 'vqa', 'synth', 'benchmarks', '.github',
+    )]
+    require(out_resolved != root.resolve()
+            and not any(src.is_relative_to(out_resolved) or out_resolved.is_relative_to(src) for src in protected),
+            'Choose a dedicated output directory for staged CI assets')
+    if dry_run:
+        return assets
+    out_resolved.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.stage-ci-', dir=out_resolved.parent) as temporary:
+        stage = Path(temporary) / 'dist'
+        stage.mkdir(parents=True, exist_ok=True)
+        for asset in assets:
+            data = asset['path'].read_bytes()
+            require(digest(data) == asset['sha256'],
+                    f"{asset['path'].name} changed after validation; rebuild first")
+            (stage / asset['path'].name).write_bytes(data)
+        checksums = checksum_text(assets)
+        _parse_checksums(checksums, [asset['path'].name for asset in assets])
+        (stage / 'SHA256SUMS').write_text(checksums)
+        if out_resolved.exists():
+            shutil.rmtree(out_resolved)
+        shutil.move(str(stage), out_resolved)
+    return assets
+
+
 def checksum_text(assets):
     """Standard sha256sum format for exactly the validated release ZIPs."""
     return ''.join(f"{asset['sha256']}  {asset['path'].name}\n"
@@ -355,17 +729,404 @@ def publish(action, assets, tag, repo='', draft=False, clobber=False, dry_run=Fa
             subprocess.run(command, cwd=root, check=True)
 
 
+def _gh_api(path, *, root=ROOT, paginate=False, method=None, fields=None):
+    command = ['gh', 'api', '--hostname', 'github.com', path]
+    if paginate:
+        command += ['--paginate', '--slurp']
+    if method:
+        command += ['--method', method]
+    if fields:
+        for flag, value in fields:
+            command += [flag, value]
+    response = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+    if response.returncode != 0:
+        detail = response.stderr.strip() or response.stdout.strip() or f'exit {response.returncode}'
+        raise ValueError(f'gh api failed ({path}): {detail}')
+    raw = response.stdout.strip()
+    if not raw:
+        return None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise ValueError('GitHub returned an invalid JSON response') from error
+    if paginate:
+        require(isinstance(value, list) and all(isinstance(page, list) for page in value),
+                'GitHub returned invalid paginated data')
+        return [item for page in value for item in page]
+    return value
+
+
+def list_releases(repo, root=ROOT):
+    return _gh_api(f'repos/{repo}/releases?per_page=100', root=root, paginate=True)
+
+
+def verify_release_assets(repo, tag, upload_paths, *, expected_draft, expected_prerelease, root=ROOT):
+    found = [rel for rel in list_releases(repo, root=root) if rel.get('tag_name') == tag]
+    draft_ok = expected_draft is None or (len(found) == 1 and found[0].get('draft') is expected_draft)
+    prerelease_ok = len(found) == 1 and found[0].get('prerelease') is expected_prerelease
+    if len(found) != 1 or not draft_ok or not prerelease_ok:
+        if expected_draft is True and not expected_prerelease:
+            raise ValueError('Expected one unpublished stable draft after upload; refusing to publish')
+        if expected_draft is True and expected_prerelease:
+            raise ValueError('Expected one unpublished nightly prerelease draft after upload; refusing to publish')
+        if expected_prerelease:
+            raise ValueError('Expected one nightly prerelease after upload; refusing to update nightly release')
+        raise ValueError('Expected one release matching expected publication state after upload; refusing to publish')
+    expected = {}
+    for path in upload_paths:
+        raw = path.read_bytes()
+        expected[path.name] = (len(raw), 'sha256:' + digest(raw))
+    actual = found[0].get('assets')
+    require(isinstance(actual, list),
+            'Draft assets do not match the complete package set; refusing to publish')
+    actual_names = {asset.get('name') for asset in actual if isinstance(asset, dict) and asset.get('name')}
+    require(len(actual) == len(expected) and actual_names == set(expected),
+            'Draft assets do not match the complete package set; refusing to publish')
+    for asset in actual:
+        name = asset.get('name', '')
+        exp_size, exp_digest = expected[name]
+        if asset.get('state') != 'uploaded' or asset.get('size') != exp_size:
+            raise ValueError(f'Draft asset is incomplete: {name}')
+        reported = asset.get('digest')
+        if not isinstance(reported, str) or not _GITHUB_DIGEST_RE.fullmatch(reported):
+            raise ValueError(f'Draft asset has no valid GitHub SHA-256 digest: {name}; refusing to publish')
+        if reported != exp_digest:
+            raise ValueError(f'Draft asset checksum does not match: {name}; refusing to publish')
+
+
+def update_nightly_git_ref(repo, sha, root=ROOT):
+    refs = _gh_api(f'repos/{repo}/git/matching-refs/tags/nightly', root=root)
+    has_exact = isinstance(refs, list) and any(
+        isinstance(item, dict) and item.get('ref') == 'refs/tags/nightly' for item in refs
+    )
+    if has_exact:
+        _gh_api(
+            f'repos/{repo}/git/refs/tags/nightly',
+            root=root,
+            method='PATCH',
+            fields=[('-f', f'sha={sha}'), ('-F', 'force=true')],
+        )
+    else:
+        _gh_api(
+            f'repos/{repo}/git/refs',
+            root=root,
+            method='POST',
+            fields=[('-f', 'ref=refs/tags/nightly'), ('-f', f'sha={sha}')],
+        )
+
+
+def _ci_release_notes(channel, assets, *, sha='', tag=''):
+    ext_assets = [asset for asset in assets if asset.get('kind', 'extension') != 'source']
+    has_source = any(asset.get('kind') == 'source' for asset in assets)
+    ext_version = ext_assets[0]['version']
+    runtime_version = ext_assets[0]['runtime_version']
+    if channel == 'nightly':
+        intro = (
+            f'Rolling nightly pre-release built transparently from source commit `{sha}`.\n\n'
+            f'Version: `{ext_version}-nightly ({sha[:7]})` · VolvoxAI `{runtime_version}`.'
+        )
+    else:
+        intro = (
+            f'Stable release `{tag}` (extension version `{ext_version}`, VolvoxAI `{runtime_version}`) '
+            f'built transparently from source commit `{sha}`.'
+        )
+    rows = ''.join(
+        f"| {a['project'].title()} | {a['browser'].title()} | {a['precision']} | "
+        f"{a['version']} | `{a['path'].name}` |\n"
+        for a in ext_assets
+    )
+    source_note = (
+        '\nThe accompanying `unaveraged-source.zip` contains the exported open-source tree for this build, '
+        if has_source else '\n'
+    )
+    checksum_note = (
+        ('and ' if has_source else 'The accompanying ')
+        + '`SHA256SUMS` verifies the exact ZIP downloads (`sha256sum -c SHA256SUMS`).\n'
+    )
+    return (
+        f'{intro}\n\n'
+        '| Extension | Browser | Model | Extension version | Archive |\n'
+        '| --- | --- | --- | --- | --- |\n'
+        f'{rows}\n'
+        'Download the ZIP for your browser and extract it. In Chrome, open '
+        '`chrome://extensions`, enable Developer mode and choose **Load unpacked**. '
+        'In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** '
+        'and select the extracted `manifest.json`. Temporary Firefox installs last until browser restart; '
+        'regular installation requires Mozilla signing.\n'
+        f'{source_note}{checksum_note}'
+    )
+
+
+def publish_ci(channel, assets, sha, *, tag='', repo='', dry_run=False, root=ROOT):
+    require(channel in ('nightly', 'stable'), f'Unsupported CI release channel: {channel!r}')
+    require(isinstance(sha, str) and _SHA_RE.fullmatch(sha) is not None,
+            'Commit SHA must be a 7..=40 character hexadecimal string')
+    sha_lower = sha.lower()
+    require(not repo or _REPO_RE.fullmatch(repo) is not None, 'REPO must be OWNER/REPO')
+    require(assets and len({asset['path'].name for asset in assets}) == len(assets),
+            'Release archive names must be nonempty and unique')
+    ext_assets = [asset for asset in assets if asset.get('kind', 'extension') != 'source']
+    require(len(ext_assets) == len(build.PROJECTS) * len(build.BROWSERS)
+            and {(asset['project'], asset['browser']) for asset in ext_assets}
+            == {(project, browser) for project in build.PROJECTS for browser in build.BROWSERS},
+            'CI release requires all four Chrome/Firefox production extension ZIPs')
+    version = project_versions(root)
+    for asset in ext_assets:
+        require(asset['version'] == version,
+                f"{asset['project']} version {asset['version']} does not match project version {version}")
+    if channel == 'stable':
+        validate_release_tag(tag, root=root)
+        target_tag = tag
+        plan_tuple = parse_semver_tuple(version)
+    else:
+        require(tag in ('', 'nightly'), '--tag must be nightly (or omitted) when --channel nightly is used')
+        target_tag = 'nightly'
+
+    if dry_run:
+        display_repo = repo or '<resolved-repo>'
+        names = [asset['path'].name for asset in assets] + ['SHA256SUMS']
+        print(f'Dry run ({channel} -> {target_tag} @ {sha_lower[:7]} on {display_repo}): '
+              + ', '.join(names), flush=True)
+        return
+
+    target_repo = repo or resolve_repository(repo, root)
+    existing_releases = list_releases(target_repo, root=root)
+
+    if channel == 'stable':
+        for existing in existing_releases:
+            existing_tag = existing.get('tag_name', '')
+            if existing_tag == target_tag:
+                raise ValueError(
+                    f'Release {target_tag} already exists (including drafts); it will not be overwritten'
+                )
+            if not existing.get('draft') and not existing.get('prerelease'):
+                previous = existing_tag[1:] if existing_tag.startswith('v') else existing_tag
+                prev_tuple = parse_semver_tuple(previous)
+                if prev_tuple is not None and prev_tuple >= plan_tuple:
+                    raise ValueError(
+                        f'Release {target_tag} version must be newer than published stable release {existing_tag}'
+                    )
+        existing_nightly = None
+    else:
+        matches = [rel for rel in existing_releases if rel.get('tag_name') == 'nightly']
+        require(len(matches) <= 1, 'Multiple nightly releases found; remove duplicates before updating')
+        existing_nightly = matches[0] if matches else None
+        if existing_nightly is not None:
+            require(existing_nightly.get('prerelease') is True,
+                    'Expected one nightly prerelease; existing nightly release is not a prerelease')
+
+    with tempfile.TemporaryDirectory(prefix='unaveraged-release-ci-') as temporary:
+        work = Path(temporary)
+        upload_dir = work / 'assets'
+        upload_dir.mkdir(parents=True)
+        upload_paths = []
+        for asset in assets:
+            data = asset['path'].read_bytes()
+            require(digest(data) == asset['sha256'],
+                    f"{asset['path'].name} changed after validation; refusing upload")
+            staged = upload_dir / asset['path'].name
+            staged.write_bytes(data)
+            upload_paths.append(staged)
+        checksums = upload_dir / 'SHA256SUMS'
+        checksums.write_text(checksum_text(assets))
+        upload_paths.append(checksums)
+        notes_file = work / 'notes.md'
+        notes_file.write_text(_ci_release_notes(channel, assets, sha=sha_lower, tag=target_tag))
+
+        if channel == 'stable':
+            create_cmd = [
+                'gh', 'release', 'create', target_tag,
+                *(str(path) for path in upload_paths),
+                '--repo', target_repo,
+                '--target', sha_lower,
+                '--draft',
+                '--title', f'unaveraged {target_tag}',
+                '--notes-file', str(notes_file),
+            ]
+            edit_cmd = [
+                'gh', 'release', 'edit', target_tag,
+                '--repo', target_repo,
+                '--draft=false',
+                '--latest',
+            ]
+            try:
+                subprocess.run(create_cmd, cwd=root, check=True)
+                verify_release_assets(
+                    target_repo, target_tag, upload_paths,
+                    expected_draft=True, expected_prerelease=False, root=root,
+                )
+                subprocess.run(edit_cmd, cwd=root, check=True)
+            except (ValueError, subprocess.CalledProcessError) as error:
+                raise ValueError(
+                    f'{error}\nInspect https://github.com/{target_repo}/releases before retrying. '
+                    'A failed upload may have left a draft; existing releases are never overwritten.'
+                ) from error
+            print(f'Published https://github.com/{target_repo}/releases/tag/{target_tag}', flush=True)
+            return
+
+        title = f'unaveraged nightly ({sha_lower[:7]})'
+        if existing_nightly is None:
+            create_cmd = [
+                'gh', 'release', 'create', 'nightly',
+                *(str(path) for path in upload_paths),
+                '--repo', target_repo,
+                '--target', sha_lower,
+                '--draft',
+                '--prerelease',
+                '--latest=false',
+                '--title', title,
+                '--notes-file', str(notes_file),
+            ]
+            edit_cmd = [
+                'gh', 'release', 'edit', 'nightly',
+                '--repo', target_repo,
+                '--draft=false',
+                '--prerelease',
+                '--latest=false',
+            ]
+            try:
+                subprocess.run(create_cmd, cwd=root, check=True)
+                verify_release_assets(
+                    target_repo, 'nightly', upload_paths,
+                    expected_draft=True, expected_prerelease=True, root=root,
+                )
+                subprocess.run(edit_cmd, cwd=root, check=True)
+            except (ValueError, subprocess.CalledProcessError) as error:
+                raise ValueError(
+                    f'{error}\nInspect https://github.com/{target_repo}/releases before retrying.'
+                ) from error
+        else:
+            expected_names = {path.name for path in upload_paths}
+            stale_names = [
+                item['name'] for item in (existing_nightly.get('assets') or [])
+                if isinstance(item, dict) and item.get('name') and item['name'] not in expected_names
+            ]
+            upload_cmd = [
+                'gh', 'release', 'upload', 'nightly',
+                *(str(path) for path in upload_paths),
+                '--repo', target_repo,
+                '--clobber',
+            ]
+            edit_cmd = [
+                'gh', 'release', 'edit', 'nightly',
+                '--repo', target_repo,
+                '--draft=false',
+                '--prerelease',
+                '--latest=false',
+                '--target', sha_lower,
+                '--title', title,
+                '--notes-file', str(notes_file),
+            ]
+            try:
+                subprocess.run(upload_cmd, cwd=root, check=True)
+                for stale in stale_names:
+                    subprocess.run([
+                        'gh', 'release', 'delete-asset', 'nightly', stale,
+                        '--repo', target_repo,
+                        '--yes',
+                    ], cwd=root, check=True)
+                verify_release_assets(
+                    target_repo, 'nightly', upload_paths,
+                    expected_draft=None, expected_prerelease=True, root=root,
+                )
+                update_nightly_git_ref(target_repo, sha_lower, root=root)
+                subprocess.run(edit_cmd, cwd=root, check=True)
+            except (ValueError, subprocess.CalledProcessError) as error:
+                raise ValueError(
+                    f'{error}\nInspect https://github.com/{target_repo}/releases before retrying.'
+                ) from error
+        print(f'Updated https://github.com/{target_repo}/releases/tag/nightly ({sha_lower[:7]})', flush=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('check', 'create', 'upload', 'models'))
+    parser.add_argument(
+        'action',
+        choices=('check', 'create', 'upload', 'models', 'check-tag', 'stage-ci', 'verify-ci', 'release-ci'),
+    )
     parser.add_argument('--browser', choices=('all', *build.BROWSERS), default=os.environ.get('BROWSER', 'all'))
     parser.add_argument('--tag', default=os.environ.get('TAG', ''))
     parser.add_argument('--repo', default=os.environ.get('REPO', ''))
     parser.add_argument('--draft', action='store_true', default=os.environ.get('DRAFT') == '1')
     parser.add_argument('--clobber', action='store_true', default=os.environ.get('CLOBBER') == '1')
     parser.add_argument('--dry-run', action='store_true', default=os.environ.get('DRY_RUN') == '1')
+    parser.add_argument('--channel', choices=('nightly', 'stable'), default='')
+    parser.add_argument('--sha', default='')
+    parser.add_argument('--dist', type=Path, default=ROOT / 'dist')
+    parser.add_argument('--out', type=Path, default=ROOT / 'release-dist')
+    parser.add_argument('--include-source', action='store_true')
+    parser.add_argument('--require-source', action='store_true')
+    parser.add_argument('--require-checksums', action='store_true')
     args = parser.parse_args(argv)
     try:
+        if args.action == 'check-tag':
+            version = validate_release_tag(args.tag, root=ROOT)
+            print(f'Tag {args.tag} matches project version v{version}', flush=True)
+            return
+        if args.action == 'stage-ci':
+            assets = stage_ci(
+                args.out,
+                browser=args.browser,
+                include_source=args.include_source,
+                dry_run=args.dry_run,
+                root=ROOT,
+            )
+            for asset in assets:
+                print(
+                    f"{asset['path'].name} · {asset['precision']} · "
+                    f"{asset['bytes']/1048576:.2f} MiB · SHA256 {asset['sha256']}"
+                )
+            return
+        if args.action == 'verify-ci':
+            expected_version = (
+                validate_release_tag(args.tag, root=ROOT) if args.tag else project_versions(ROOT)
+            )
+            dist = args.dist if args.dist.is_absolute() else ROOT / args.dist
+            assets = discover_ci_assets(
+                dist,
+                require_source=args.require_source,
+                require_checksums=args.require_checksums,
+                expected_version=expected_version,
+                root=ROOT,
+            )
+            for asset in assets:
+                print(
+                    f"{asset['path'].name} · {asset['precision']} · "
+                    f"{asset['bytes']/1048576:.2f} MiB · SHA256 {asset['sha256']}"
+                )
+            return
+        if args.action == 'release-ci':
+            require(args.channel in ('nightly', 'stable'),
+                    '--channel <nightly|stable> is required for release-ci')
+            require(isinstance(args.sha, str) and _SHA_RE.fullmatch(args.sha) is not None,
+                    '--sha must be a 7..=40 character hexadecimal commit SHA')
+            expected_version = (
+                validate_release_tag(args.tag, root=ROOT)
+                if args.channel == 'stable' else project_versions(ROOT)
+            )
+            dist = args.dist if args.dist.is_absolute() else ROOT / args.dist
+            assets = discover_ci_assets(
+                dist,
+                require_source=args.require_source,
+                require_checksums=args.require_checksums,
+                expected_version=expected_version,
+                root=ROOT,
+            )
+            for asset in assets:
+                print(
+                    f"{asset['path'].name} · {asset['precision']} · "
+                    f"{asset['bytes']/1048576:.2f} MiB · SHA256 {asset['sha256']}"
+                )
+            publish_ci(
+                args.channel,
+                assets,
+                args.sha,
+                tag=args.tag,
+                repo=args.repo,
+                dry_run=args.dry_run,
+                root=ROOT,
+            )
+            return
         require(args.action != 'models' or args.browser == 'all',
                 'The models action requires --browser all')
         assets = collect_assets(browser=args.browser)

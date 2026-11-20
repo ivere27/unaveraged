@@ -40,8 +40,8 @@ EXTENSION_FILES = (
 SOURCE_FILES = (
     '.gitignore', 'Makefile', 'README.md', 'LICENSE', 'NOTICE', 'PRIVACY.md', 'STORE.md',
     'package.json', 'package-lock.json', 'requirements.txt',
-    'shared/build.py', 'shared/release.py', 'shared/docs.py', 'shared/pages.py', 'shared/model_support.py', 'shared/cpu_policy.py', 'shared/sites.json',
-    '.github/workflows/pages.yml',
+    'shared/build.py', 'shared/release.py', 'shared/cws.mjs', 'shared/docs.py', 'shared/pages.py', 'shared/model_support.py', 'shared/cpu_policy.py', 'shared/sites.json',
+    '.github/workflows/build.yml', '.github/workflows/pages.yml',
     *(f'example/{name}' for name in ('index.html', 'app.js', 'worker.js', 'style.css', 'browser.mjs', 'questions.js')),
     'docs/style.css', 'docs/requirements.txt',
     *(f'docs/assets/examples/{name}' for name in (
@@ -59,7 +59,7 @@ SOURCE_FILES = (
     'shared/tests/vqa-profile.test.mjs',
     'shared/tests/digit-evaluation.test.mjs',
     'shared/tests/test_quantization.py', 'shared/tests/test_frozen.py', 'shared/tests/test_batching.py',
-    'shared/tests/test_release.py', 'shared/tests/test_pages.py',
+    'shared/tests/test_release.py', 'shared/tests/test_pages.py', 'shared/tests/cws.test.mjs',
     'shared/tests/test_make.py', 'shared/tests/test_cpu_policy.py', 'shared/tests/test_vqa_check.py',
     'shared/tests/test_source_builds.py', 'shared/tests/test_digit_rebuild.py',
     *(f'shared/tests/{name}' for name in (
